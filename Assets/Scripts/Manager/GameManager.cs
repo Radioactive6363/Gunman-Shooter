@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     public GameState currentState;
 
     [Header("Scene Management")]
-    public string[] duelScenes = { "DesiertoScene", "SelvaScene", "MinaScene" };
+    public string[] duelScenes = { "DesertScene", "JungleScene", "CaveScene" };
     private int currentSceneIndex = 0;
     
     [Header("Lobby Scenes")]
