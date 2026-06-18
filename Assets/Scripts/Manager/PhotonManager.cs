@@ -159,7 +159,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         {
             RoomOptions roomOptions = new RoomOptions
             {
-                MaxPlayers = 5,
+                MaxPlayers = 2,
                 EmptyRoomTtl = 10000,
                 CleanupCacheOnLeave = true
             };
