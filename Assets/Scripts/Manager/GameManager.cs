@@ -230,10 +230,10 @@ public class GameManager : MonoBehaviourPunCallbacks
         
         if (PhotonNetwork.IsMasterClient)
         {
+            PhotonNetwork.Destroy(gameObject);
             PhotonNetwork.LoadLevel(lobbyRoomSceneName);
         }
         Instance = null;
-        Destroy(gameObject);
     }
     
     public override void OnPlayerLeftRoom(Player otherPlayer)
