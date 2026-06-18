@@ -160,6 +160,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         _currentSceneIndex = 0;
         
         PhotonNetwork.LeaveRoom();
+        LeaveRoom();
     }
     
 
@@ -169,12 +170,12 @@ public class GameManager : MonoBehaviourPunCallbacks
         if (PhotonNetwork.CurrentRoom.PlayerCount < 2) 
         {
             PhotonNetwork.LeaveRoom();
+            LeaveRoom();
         }
     }
 
-    public override void OnLeftRoom()
+    private void LeaveRoom()
     {
-        Destroy(gameObject);
         SceneManager.LoadScene(mainMenuSceneName);
     }
 

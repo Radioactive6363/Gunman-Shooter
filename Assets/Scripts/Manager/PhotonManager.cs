@@ -109,9 +109,9 @@ public class PhotonManager : MonoBehaviourPunCallbacks
             ShowDisconnectErrorOnLoad = true;
             LastDisconnectErrorMessage = $"Network Error: {cause}"; 
 
-            if (SceneManager.GetActiveScene().name != "StartingScene") 
+            if (SceneManager.GetActiveScene().name != "MenuScene") 
             {
-                SceneManager.LoadScene("StartingScene");
+                SceneManager.LoadScene("MenuScene");
             }
             CheckDisconnectionError(cause);
         }
