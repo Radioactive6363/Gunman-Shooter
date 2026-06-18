@@ -128,7 +128,7 @@ public class GameManager : MonoBehaviourPunCallbacks
 
         if (_player1Wins >= WINS_NEEDED || _player2Wins >= WINS_NEEDED)
         {
-            photonView.RPC("EndMatchRPC", RpcTarget.All);
+            photonView.RPC("EndMatchRPC", RpcTarget.MasterClient);
         }
         else
         {
@@ -168,13 +168,9 @@ public class GameManager : MonoBehaviourPunCallbacks
         _player2Wins = 0;
         _currentSceneIndex = 0;
         
-        if (PhotonNetwork.IsConnected && PhotonNetwork.InRoom && PhotonNetwork.NetworkClientState != ClientState.Leaving)
+        if (PhotonNetwork.IsMasterClient)
         {
             PhotonNetwork.LeaveRoom();
-        }
-        else
-        {
-            SceneManager.LoadScene(mainMenuSceneName);
         }
     }
     
@@ -182,9 +178,9 @@ public class GameManager : MonoBehaviourPunCallbacks
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
         Log.Info($"Player {otherPlayer.NickName} disconnected.");
-        if (PhotonNetwork.CurrentRoom.PlayerCount < 2) 
+        if (PhotonNetwork.CurrentRoom.PlayerCount < 2)
         {
-            PhotonNetwork.LeaveRoom();
+            SceneManager.LoadScene(mainMenuSceneName);
         }
     }
 
