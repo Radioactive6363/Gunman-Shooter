@@ -723,11 +723,11 @@ PlayerSettings:
   apiCompatibilityLevel: 6
   activeInputHandler: 0
   windowsGamepadBackendHint: 0
-  cloudProjectId: 
+  cloudProjectId: 29aa2024-aff7-489c-9626-8d5dbc2b8b59
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: 
-  organizationId: 
+  projectName: Gunman-Shooter
+  organizationId: likboss3
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   playerDataPath: 
