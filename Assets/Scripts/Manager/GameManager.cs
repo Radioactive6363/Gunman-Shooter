@@ -32,6 +32,16 @@ public class GameManager : MonoBehaviourPunCallbacks
         else
             Destroy(gameObject);
     }
+    
+    private void Start()
+    {
+        if (SceneManager.GetActiveScene().name == lobbyRoomSceneName)
+        {
+            Initialize();
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+    }
 
     private void SetGameState(GameState newState)
     {
@@ -63,7 +73,7 @@ public class GameManager : MonoBehaviourPunCallbacks
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
-        else // duel scenes
+        else
         {
             SpawnPlayer();
             SetGameState(GameState.Preparation);

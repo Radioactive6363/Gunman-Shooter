@@ -155,12 +155,9 @@ public class PhotonManager : MonoBehaviourPunCallbacks
             return;
         }
 
-        string roomName = PhotonNetwork.CurrentRoom.Name;
-        int playerCount = PhotonNetwork.CurrentRoom.PlayerCount;
-        int maxPlayerCount = PhotonNetwork.CurrentRoom.MaxPlayers;
-        bool isMaster = PhotonNetwork.IsMasterClient;
-
-        Log.Info("JoinedRoom: " + roomName + ", PlayerCount: " + playerCount + "/" + maxPlayerCount + ", IsMaster: " + isMaster);
+        Log.Info($"JoinedRoom: {PhotonNetwork.CurrentRoom.Name}, " +
+                 $"PlayerCount: {PhotonNetwork.CurrentRoom.PlayerCount}/{PhotonNetwork.CurrentRoom.MaxPlayers}, " +
+                 $"IsMaster: {PhotonNetwork.IsMasterClient}");
 
         if (PhotonNetwork.IsMasterClient)
         {
@@ -169,6 +166,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
         OnRoom?.Invoke();
     }
+
    
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
