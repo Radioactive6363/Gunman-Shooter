@@ -48,6 +48,7 @@ public class GameLogger : MonoBehaviour
         logs.Add(($"[{timestamp}] {message}", type));
 
         if (logs.Count > 100) logs.RemoveAt(0); // límite de memoria
+        scrollPos.y = Mathf.Infinity; 
     }
 
     private void Update()

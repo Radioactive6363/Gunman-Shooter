@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 2352961137335294358}
   - component: {fileID: 2516172218789396568}
   - component: {fileID: -913828468183811637}
-  - component: {fileID: 4828482361671081191}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -46,14 +45,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c7fa84f22bbf3547a8dc2e715a799fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentState: 0
-  timeTillDuel: 5
+  timeTillDuel: 1
   duelScenes:
   - DesertScene
   - JungleScene
   - CaveScene
   lobbyRoomSceneName: LobbyRoomScene
   mainMenuSceneName: MenuScene
+  currentState: 0
 --- !u!114 &-913828468183811637
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -76,15 +75,3 @@ MonoBehaviour:
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
---- !u!114 &4828482361671081191
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3166977149461898985}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2151acc05a4743740a51ab32b9f811e0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

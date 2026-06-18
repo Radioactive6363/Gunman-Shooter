@@ -12,12 +12,20 @@ public class Revolver : MonoBehaviourPun, IWeapon
     }
 
     [PunRPC]
-    private void FireRevolverRPC(Vector3 origin, Vector3 direction)
+    private void FireRevolverRPC(Vector3 origin, Vector3 direction, PhotonMessageInfo info)
     {
+        int shooterActorNr = info.Sender.ActorNumber;
+
         if (Physics.Raycast(origin, direction, out RaycastHit hit, range))
         {
-            IDamageable target = hit.collider.GetComponent<IDamageable>();
+            PhotonView targetView = hit.collider.GetComponent<PhotonView>();
             
+            if (targetView != null && targetView.OwnerActorNr == shooterActorNr)
+            {
+                return;
+            }
+
+            IDamageable target = hit.collider.GetComponent<IDamageable>();
             if (target != null)
             {
                 target.TakeDamage();

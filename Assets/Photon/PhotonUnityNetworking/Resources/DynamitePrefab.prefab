@@ -11,9 +11,11 @@ GameObject:
   - component: {fileID: 3349272599030045984}
   - component: {fileID: 5413825654309593941}
   - component: {fileID: 5694022878817383678}
-  - component: {fileID: 2274984283625871627}
+  - component: {fileID: 3863815164445023726}
   - component: {fileID: 7575937931649402422}
+  - component: {fileID: 9210204125016682918}
   - component: {fileID: 3156969117499277334}
+  - component: {fileID: 2799495314555058169}
   m_Layer: 0
   m_Name: DynamitePrefab
   m_TagString: Untagged
@@ -43,7 +45,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7513202277547213239}
-  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: -1801400722603231261, guid: a5246f51cd8154144a26baab29c6899f, type: 3}
 --- !u!23 &5694022878817383678
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -86,8 +88,8 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &2274984283625871627
-CapsuleCollider:
+--- !u!65 &3863815164445023726
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -96,10 +98,9 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 0.5000001
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
+  serializedVersion: 2
+  m_Size: {x: 0.16600353, y: 0.15422045, z: 0.40259278}
+  m_Center: {x: 0.0000000037252903, y: 0.011869758, z: 0.048354164}
 --- !u!114 &7575937931649402422
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -114,6 +115,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   explosionDelay: 3
   explosionRadius: 6
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 0
+--- !u!54 &9210204125016682918
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7513202277547213239}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!114 &3156969117499277334
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -132,7 +152,24 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 0
   observableSearch: 2
-  ObservedComponents: []
+  ObservedComponents:
+  - {fileID: 2799495314555058169}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
+--- !u!114 &2799495314555058169
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7513202277547213239}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 64179f3720bbfe947b7724caa67b7c1d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SynchronizeVelocity: 1
+  m_SynchronizeAngularVelocity: 0
+  m_TeleportEnabled: 0
+  m_TeleportIfDistanceGreaterThan: 3

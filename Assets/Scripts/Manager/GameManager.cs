@@ -1,24 +1,29 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviourPunCallbacks
 {
     public static GameManager Instance;
-    public GameState currentState;
+    public static event Action<GameState> OnGameStateChanged;
     
     [Header("Timer Settings")]
     [SerializeField] private float timeTillDuel = 0.5f;
 
     [Header("Scene Management")]
-    public string[] duelScenes = { "DesertScene", "JungleScene", "CaveScene" };
+    [SerializeField] private string[] duelScenes = { "DesertScene", "JungleScene", "CaveScene" };
     
     [Header("Lobby Scenes")]
-    public string lobbyRoomSceneName = "LobbyRoomScene"; 
-    public string mainMenuSceneName = "MenuScene";
+    [SerializeField] private string lobbyRoomSceneName = "LobbyRoomScene"; 
+    [SerializeField] private string mainMenuSceneName = "MenuScene";
+    
+    [Header("Game State")]
+    [SerializeField] private GameState currentState;
 
     private int _currentSceneIndex;
     private Dictionary<int, int> _playerWins = new Dictionary<int, int>();
@@ -48,9 +53,21 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
 
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (PhotonNetwork.InRoom)
+            {
+                PhotonNetwork.LeaveRoom();
+            }
+        }
+    }
+
     private void SetGameState(GameState newState)
     {
         currentState = newState;
+        OnGameStateChanged?.Invoke(newState);
     }
 
     public override void OnEnable()
@@ -86,6 +103,15 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
     
+    private void Initialize()
+    {
+        if (SceneManager.GetActiveScene().name == lobbyRoomSceneName)
+        {
+            SetGameState(GameState.WaitingForPlayers);
+            CheckPlayers();
+        }
+    }
+    
     private IEnumerator SpawnWhenReady(string sceneName)
     {
         while (Instance == null || !photonView.IsMine && !photonView.IsOwnerActive)
@@ -93,8 +119,10 @@ public class GameManager : MonoBehaviourPunCallbacks
 
         SpawnPlayer();
         SetGameState(GameState.Preparation);
+        
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        
         Log.Info($"Load Level: {sceneName}. Preparation.");
     
         if (PhotonNetwork.IsMasterClient)
@@ -148,15 +176,6 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
 
-    private void Initialize()
-    {
-        if (SceneManager.GetActiveScene().name == lobbyRoomSceneName)
-        {
-            SetGameState(GameState.WaitingForPlayers);
-            CheckPlayers();
-        }
-    }
-
     private IEnumerator DuelState()
     {
         yield return new WaitForSeconds(timeTillDuel);
@@ -167,7 +186,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     private void DuelStateRPC()
     {
         SetGameState(GameState.Duel);
-        Log.Info("DUEL!");
+        Log.Info("Duel Started");
     }
     
 
