@@ -9,6 +9,9 @@ public class DynamiteProjectile : MonoBehaviourPun, IPunInstantiateMagicCallback
     [SerializeField] private float explosionRadius = 6f;
     [SerializeField] private LayerMask obstacleLayer;
 
+    [Header("Visual Settings")]
+    [SerializeField] private Transform explosionAreaIndicator; 
+
     private int _throwerActorNr = -1;
 
     public void OnPhotonInstantiate(PhotonMessageInfo info)
@@ -22,6 +25,11 @@ public class DynamiteProjectile : MonoBehaviourPun, IPunInstantiateMagicCallback
 
     private void Start()
     {
+        if (explosionAreaIndicator != null)
+        {
+            explosionAreaIndicator.localScale = Vector3.one * (explosionRadius * 2f);
+        }
+        
         if (PhotonNetwork.IsMasterClient)
         {
             StartCoroutine(ExplodeRoutine());
@@ -40,7 +48,7 @@ public class DynamiteProjectile : MonoBehaviourPun, IPunInstantiateMagicCallback
             if (target != null)
             {
                 Vector3 targetCenter = hitCollider.bounds.center;
-
+                
                 if (!Physics.Linecast(transform.position, targetCenter, out RaycastHit hit, obstacleLayer))
                 {
                     target.TakeDamage();
@@ -54,7 +62,7 @@ public class DynamiteProjectile : MonoBehaviourPun, IPunInstantiateMagicCallback
                 }
             }
         }
-
+        
         photonView.RPC("PlayExplosionEffectsRPC", RpcTarget.All);
         
         PhotonNetwork.Destroy(gameObject);
@@ -63,7 +71,9 @@ public class DynamiteProjectile : MonoBehaviourPun, IPunInstantiateMagicCallback
     [PunRPC]
     private void PlayExplosionEffectsRPC()
     {
-        Log.Info($"{gameObject.name} exploded at {transform.position}");
-        // TODO: Instanciar prefab de humo/fuego aquí (sin PhotonNetwork.Instantiate, solo Instantiate local)
+        if (explosionAreaIndicator != null)
+        {
+            explosionAreaIndicator.gameObject.SetActive(false);
+        }
     }
 }
