@@ -181,7 +181,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
             {
                 MaxPlayers = 2,
                 EmptyRoomTtl = 10000,
-                CleanupCacheOnLeave = true
+                CleanupCacheOnLeave = false
             };
             PhotonNetwork.CreateRoom(roomName, roomOptions);
         }

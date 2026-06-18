@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentState: 0
-  timeTillDuel: 0.5
+  timeTillDuel: 5
   duelScenes:
   - DesertScene
   - JungleScene
