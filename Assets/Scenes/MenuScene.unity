@@ -5224,7 +5224,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: PhotonManager
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8847211742874493013, guid: 29d6afe12d17b2847910de193790abfc, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 29d6afe12d17b2847910de193790abfc, type: 3}
 --- !u!1 &1618204553
 GameObject:
