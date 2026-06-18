@@ -133,9 +133,11 @@ public class WorldTimeManager : MonoBehaviourPunCallbacks
 
         Debug.Log($"Sun Angle: {sunAngle}");
 
-        // Tu Directional Light:
-        // sunLight.transform.rotation =
-        //     Quaternion.Euler(sunAngle, 170f, 0f);
+        Light sun = FindObjectOfType<Light>();
+        if ( sun != null)
+        {
+            sun.transform.rotation = Quaternion.Euler(sunAngle, 170f, 0f);
+        }
     }
 
     void LoadExistingProperties()
