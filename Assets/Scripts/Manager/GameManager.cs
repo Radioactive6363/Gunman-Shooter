@@ -6,7 +6,8 @@ using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Unity.RemoteConfig;
+using Unity.Services.Authentication;
+using Unity.Services.Core;
 using Unity.Services.RemoteConfig;
 
 public class GameManager : MonoBehaviourPunCallbacks
@@ -33,8 +34,8 @@ public class GameManager : MonoBehaviourPunCallbacks
     [Header("Game State")]
     [SerializeField] private GameState currentState;
     
-    public struct userAttributes { }
-    public struct appAttributes { }
+    private struct userAttributes { }
+    private struct appAttributes { }
 
     private int _currentSceneIndex;
     private List<int> _alivePlayers = new List<int>();
@@ -99,19 +100,26 @@ public class GameManager : MonoBehaviourPunCallbacks
     {
         try
         {
-            var task = await RemoteConfigService.Instance.FetchConfigsAsync(new userAttributes(), new appAttributes());
+            await UnityServices.InitializeAsync();
+
+            if (!AuthenticationService.Instance.IsSignedIn)
+            {
+                await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            }
             
+            await RemoteConfigService.Instance.FetchConfigsAsync(new userAttributes(), new appAttributes());
+        
             int seed = RemoteConfigService.Instance.appConfig.GetInt("DesiredGameOrder");
-            
+        
             if (seed != 0)
             {
                 ShuffleLevels(seed);
-                Log.Info($"[LiveOps] Maps Swapped with: {seed}");
+                Log.Info($"[LiveOps] Game Order Swapped With: {seed}");
             }
         }
         catch (Exception e)
         {
-            Log.Warning($"[LiveOps] Cant Apply Remote Config: {e.Message}");
+            Log.Warning($"[LiveOps] Failed Initializing: {e.Message}");
         }
     }
     
@@ -126,6 +134,11 @@ public class GameManager : MonoBehaviourPunCallbacks
             (duelScenes[k], duelScenes[n]) = (duelScenes[n], duelScenes[k]);
         }
         Log.Info($"[LiveOps] Levels Mixed with seed: {seed}");
+        foreach (var typeDuel in duelScenes)
+        {
+            Log.Info(typeDuel);
+        }
+
     }
     
     public void SetDuelStartDelay(float seconds)

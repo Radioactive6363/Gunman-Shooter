@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 469c24fdb3bd6431b92cc1465bd9166b, type: 3}
+  m_Name: RemoteConfigDataStoreAsset
+  m_EditorClassIdentifier: 
+  _rsKeyList: "[\r\n  {\r\n    \"metadata\": {\r\n      \"entityId\": \"c68932d8-9db0-4e76-8c65-34161346ce57\"\r\n   
+    },\r\n    \"rs\": {\r\n      \"key\": \"DesiredGameOrder\",\r\n      \"type\":
+    \"int\",\r\n      \"value\": 15\r\n    }\r\n  }\r\n]"
+  _rsLastCachedKeyList: "[\r\n  {\r\n    \"metadata\": {\r\n      \"entityId\": \"c68932d8-9db0-4e76-8c65-34161346ce57\"\r\n   
+    },\r\n    \"rs\": {\r\n      \"key\": \"DesiredGameOrder\",\r\n      \"type\":
+    \"int\",\r\n      \"value\": 15\r\n    }\r\n  }\r\n]"
+  _environments: "[\r\n  {\r\n    \"projectId\": \"29aa2024-aff7-489c-9626-8d5dbc2b8b59\",\r\n   
+    \"name\": \"production\",\r\n    \"id\": \"d71b5ca1-e2aa-477f-a0c7-63fe73f4cd8d\",\r\n   
+    \"isDefault\": true,\r\n    \"createdAt\": \"2026-06-18T17:30:47Z\",\r\n    \"updatedAt\":
+    \"2026-06-18T17:30:47Z\"\r\n  }\r\n]"
