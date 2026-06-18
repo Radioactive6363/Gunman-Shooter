@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: PhotonServerSettings
   m_EditorClassIdentifier: 
   AppSettings:
-    AppIdRealtime: f6654557-c980-4c12-83b9-0c3fb0df7e3c
+    AppIdRealtime: 584d7a81-f1b6-4919-a480-9978b17b81b2
     AppIdFusion: 
     AppIdChat: 
-    AppIdVoice: 
+    AppIdVoice: 584d7a81-f1b6-4919-a480-9978b17b81b2
     AppVersion: 
     UseNameServer: 1
     FixedRegion: 
@@ -34,38 +34,27 @@ MonoBehaviour:
   RunInBackground: 1
   StartInOfflineMode: 0
   RpcList:
+  - CantHearYou
+  - ChangeColour
   - ClickRpc
   - DestroyRpc
+  - HeresWhy
+  - BroadcastServerMessageRPC
+  - CancelLobbyCountdownRPC
+  - CancelMatchRPC
   - DestroySpaceship
-  - Fire
-  - RespawnSpaceship
-  - OnDamage
-  - SpawnPrefabPlayer
-  - DefineSpawnPoint
-  - RPC_SyncChampion
-  - OnHeal
-  - RPC_AnnounceEvent
-  - OnShieldGained
-  - EnableMovement
-  - RPC_ForceDisconnect
+  - DuelStateRPC
   - EndMatchRPC
-  - ResetPlayersRPC
-  - SyncScoreRPC
-  - TakeDamageRPC
-  - ValidateRaycastShotRPC
+  - Fire
   - FireRevolverRPC
   - PlayExplosionEffectsRPC
-  - DuelStateRPC
-  - ThrowSpearRPC
-  - ThrowDynamiteRPC
-  - CancelLobbyCountdownRPC
+  - RespawnSpaceship
   - SetPreparationStateRPC
-  - SetWaitingStateRPC
-  - SetNameRPC
-  - UpdateLobbyCountdownRPC
   - SyncRoundResultRPC
-  - BroadcastServerMessageRPC
-  - CancelMatchRPC
+  - TakeDamageRPC
+  - ThrowDynamiteRPC
+  - ThrowSpearRPC
+  - UpdateLobbyCountdownRPC
   DisableAutoOpenWizard: 1
-  ShowSettings: 0
+  ShowSettings: 1
   DevRegionSetOnce: 1
