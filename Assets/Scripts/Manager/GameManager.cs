@@ -28,9 +28,14 @@ public class GameManager : MonoBehaviourPunCallbacks
     private void Awake()
     {
         if (Instance == null)
+        {
             Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
         else
+        {
             Destroy(gameObject);
+        }
     }
     
     private void Start()
@@ -105,13 +110,19 @@ public class GameManager : MonoBehaviourPunCallbacks
         int needed = PhotonNetwork.CurrentRoom.MaxPlayers;
         if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount == needed)
         {
-            Log.Info("All Players Connected.");
-            LoadNextDuelScene();
+            Log.Info("All Players Connected. Starting match shortly...");
+            StartCoroutine(WaitAndLoadDuelScene(5f)); 
         }
         else
         {
             Log.Info($"({PhotonNetwork.CurrentRoom.PlayerCount}/{needed} Players)");
         }
+    }
+    
+    private IEnumerator WaitAndLoadDuelScene(float waitTime)
+    {
+        yield return new WaitForSeconds(waitTime);
+        LoadNextDuelScene();
     }
 
     private void SpawnPlayer()
@@ -216,12 +227,15 @@ public class GameManager : MonoBehaviourPunCallbacks
     private IEnumerator ReturnToLobbyRoutine()
     {
         yield return new WaitForSeconds(5f);
-        _playerWins.Clear();
-        _currentSceneIndex = 0;
+        
         if (PhotonNetwork.IsMasterClient)
+        {
             PhotonNetwork.LoadLevel(lobbyRoomSceneName);
+        }
+        Instance = null;
+        Destroy(gameObject);
     }
-
+    
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
         Log.Info($"Player {otherPlayer.NickName} disconnected.");
