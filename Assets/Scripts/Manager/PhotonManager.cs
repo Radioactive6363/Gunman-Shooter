@@ -50,6 +50,30 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         Application.targetFrameRate = 60;
     }
 
+    public override void OnEnable()
+    {
+        base.OnEnable();
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    public override void OnDisable()
+    {
+        base.OnDisable();
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+    
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == "LobbyRoomScene" && PhotonNetwork.IsMasterClient)
+        {
+            if (GameManager.Instance == null)
+            {
+                PhotonNetwork.InstantiateRoomObject("GameManager", Vector3.zero, Quaternion.identity);
+                Log.Info("GameManager instantiated.");
+            }
+        }
+    }
+
     private void LatencyDebugging()
     {
     #if UNITY_EDITOR
@@ -128,25 +152,22 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         if (!PhotonNetwork.CurrentRoom.IsVisible)
         {
             PhotonNetwork.LeaveRoom();
+            return;
         }
-        else
-        {
-            string roomName = PhotonNetwork.CurrentRoom.Name;
-            int playerCount = PhotonNetwork.CurrentRoom.PlayerCount;
-            int maxPlayerCount = PhotonNetwork.CurrentRoom.MaxPlayers;
-            bool isMaster = PhotonNetwork.IsMasterClient;
 
-            Log.Info("JoinedRoom: " + roomName + ", PlayerCount: " + playerCount + "/" + maxPlayerCount + ",IsMaster: " + isMaster);
-            
-            if (PhotonNetwork.IsMasterClient)
-            {
-                PhotonNetwork.InstantiateRoomObject("GameManager", Vector3.zero, Quaternion.identity);
-                PhotonNetwork.LoadLevel("LobbyRoomScene");
-            }
-            
-            Log.Info("Lobby Room Scene Loaded");
-            OnRoom?.Invoke();
+        string roomName = PhotonNetwork.CurrentRoom.Name;
+        int playerCount = PhotonNetwork.CurrentRoom.PlayerCount;
+        int maxPlayerCount = PhotonNetwork.CurrentRoom.MaxPlayers;
+        bool isMaster = PhotonNetwork.IsMasterClient;
+
+        Log.Info("JoinedRoom: " + roomName + ", PlayerCount: " + playerCount + "/" + maxPlayerCount + ", IsMaster: " + isMaster);
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            PhotonNetwork.LoadLevel("LobbyRoomScene");
         }
+
+        OnRoom?.Invoke();
     }
    
     public override void OnPlayerEnteredRoom(Player newPlayer)
