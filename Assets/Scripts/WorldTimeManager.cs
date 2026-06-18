@@ -10,6 +10,8 @@ using PhotonHashtable = ExitGames.Client.Photon.Hashtable;
 
 public class WorldTimeManager : MonoBehaviourPunCallbacks
 {
+    private Light sun;
+
     [Serializable]
     public class CurrentData
     {
@@ -132,7 +134,14 @@ public class WorldTimeManager : MonoBehaviourPunCallbacks
 
         float sunAngle = (t * 360f) - 90f;
 
-        Light sun = FindObjectOfType<Light>();
+        Light []lights = FindObjectsOfType<Light>();
+        foreach ( Light light in lights)
+        {
+            if (light.type == LightType.Directional)
+            {
+                sun = light;
+            }
+        }
 
         if (sun != null)
         {
