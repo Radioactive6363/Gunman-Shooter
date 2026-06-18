@@ -77,8 +77,8 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
     
-    private void OnEnable() { SceneManager.sceneLoaded += OnSceneLoaded; }
-    private void OnDisable() { SceneManager.sceneLoaded -= OnSceneLoaded; }
+    public override void OnEnable() { SceneManager.sceneLoaded += OnSceneLoaded; }
+    public override void OnDisable() { SceneManager.sceneLoaded -= OnSceneLoaded; }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
@@ -160,7 +160,6 @@ public class GameManager : MonoBehaviourPunCallbacks
         _currentSceneIndex = 0;
         
         PhotonNetwork.LeaveRoom();
-        LeaveRoom();
     }
     
 
@@ -170,11 +169,10 @@ public class GameManager : MonoBehaviourPunCallbacks
         if (PhotonNetwork.CurrentRoom.PlayerCount < 2) 
         {
             PhotonNetwork.LeaveRoom();
-            LeaveRoom();
         }
     }
 
-    private void LeaveRoom()
+    public override void OnLeftRoom()
     {
         SceneManager.LoadScene(mainMenuSceneName);
     }
