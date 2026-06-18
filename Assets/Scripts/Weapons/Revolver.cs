@@ -8,7 +8,7 @@ public class Revolver : MonoBehaviourPun, IWeapon
     [SerializeField] private float range = 100f;
     
     [Header("Visual Settings")]
-    [SerializeField] private float tracerDuration = 0.05f;
+    [SerializeField] private float tracerDuration = 0.5f;
     [SerializeField] private Material tracerMaterial;
 
     public void Attack(Vector3 origin, Vector3 direction, float chargePercentage)

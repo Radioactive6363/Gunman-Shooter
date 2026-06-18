@@ -421,13 +421,11 @@ public class GameManager : MonoBehaviourPunCallbacks
     private IEnumerator ReturnToLobbyRoutine()
     {
         yield return new WaitForSeconds(5f);
-        
+    
         if (PhotonNetwork.IsMasterClient)
         {
-            Destroy(gameObject);
             PhotonNetwork.LoadLevel(lobbyRoomSceneName);
         }
-        Instance = null;
     }
     
     public override void OnPlayerLeftRoom(Player otherPlayer)
