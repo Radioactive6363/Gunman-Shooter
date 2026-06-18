@@ -1,19 +1,39 @@
 using System;
 using System.Collections;
-using Photon.Pun;
-using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.Networking;
 
+using Photon.Pun;
+using Photon.Realtime;
 using PhotonHashtable = ExitGames.Client.Photon.Hashtable;
 
 public class WorldTimeManager : MonoBehaviourPunCallbacks
 {
     [Serializable]
-    private class TimeResponse
+    public class CurrentData
     {
-        public string datetime;
-        public string timezone;
+        public string time;
+    }
+
+    [Serializable]
+    public class OpenMeteoResponse
+    {
+        public CurrentData current;
+    }
+
+    [Serializable]
+    public class CityData
+    {
+        public string cityName;
+        public float latitude;
+        public float longitude;
+
+        public CityData(string city, float lat, float lon)
+        {
+            cityName = city;
+            latitude = lat;
+            longitude = lon;
+        }
     }
 
     public static WorldTimeManager Instance;
@@ -21,47 +41,46 @@ public class WorldTimeManager : MonoBehaviourPunCallbacks
     public string CurrentCityName { get; private set; }
     public DateTime CurrentTime { get; private set; }
 
-    private readonly string[] timezones =
-    {
-        "America/New_York",
-        "Europe/London",
-        "Europe/Madrid",
-        "Asia/Tokyo",
-        "Australia/Sydney",
-        "America/Argentina/Buenos_Aires",
-        "Europe/Paris",
-        "Asia/Seoul",
-        "America/Los_Angeles",
-        "Africa/Cairo"
-    };
-
     private const string CITY_KEY = "CITY";
     private const string TIME_KEY = "TIME";
+
+    private CityData[] cities =
+    {
+        new CityData("Buenos Aires", -34.6037f, -58.3816f),
+        new CityData("New York", 40.7128f, -74.0060f),
+        new CityData("London", 51.5072f, -0.1276f),
+        new CityData("Madrid", 40.4168f, -3.7038f),
+        new CityData("Tokyo", 35.6762f, 139.6503f),
+        new CityData("Sydney", -33.8688f, 151.2093f),
+        new CityData("Seoul", 37.5665f, 126.9780f),
+        new CityData("Paris", 48.8566f, 2.3522f),
+        new CityData("Cairo", 30.0444f, 31.2357f)
+    };
 
     private void Awake()
     {
         Instance = this;
     }
 
-    private void Start()
+    public override void OnCreatedRoom()
     {
         if (PhotonNetwork.IsMasterClient)
         {
             StartCoroutine(GetRandomCityTime());
         }
-        else
-        {
-            LoadExistingProperties();
-        }
     }
 
     IEnumerator GetRandomCityTime()
     {
-        string timezone =
-            timezones[UnityEngine.Random.Range(0, timezones.Length)];
+        CityData city =
+            cities[UnityEngine.Random.Range(0, cities.Length)];
 
         string url =
-            $"https://worldtimeapi.org/api/timezone/{timezone}";
+            $"https://api.open-meteo.com/v1/forecast" +
+            $"?latitude={city.latitude}" +
+            $"&longitude={city.longitude}" +
+            $"&current=temperature_2m" +
+            $"&timezone=auto";
 
         using (UnityWebRequest request = UnityWebRequest.Get(url))
         {
@@ -69,37 +88,33 @@ public class WorldTimeManager : MonoBehaviourPunCallbacks
 
             if (request.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError($"Error API: {request.error}");
+                Debug.LogError($"Open-Meteo Error: {request.error}");
                 yield break;
             }
 
-            TimeResponse response =
-                JsonUtility.FromJson<TimeResponse>(
+            OpenMeteoResponse response =
+                JsonUtility.FromJson<OpenMeteoResponse>(
                     request.downloadHandler.text);
 
-            DateTime dateTime =
-                DateTime.Parse(response.datetime);
+            DateTime cityTime =
+                DateTime.Parse(response.current.time);
 
-            string city =
-                timezone.Split('/')[timezone.Split('/').Length - 1]
-                .Replace("_", " ");
-
-            PhotonHashtable roomProps = new PhotonHashtable
+            PhotonHashtable props = new PhotonHashtable
             {
-                { CITY_KEY, city },
-                { TIME_KEY, dateTime.ToString("O") }
+                { CITY_KEY, city.cityName },
+                { TIME_KEY, cityTime.ToString("O") }
             };
 
-            PhotonNetwork.CurrentRoom.SetCustomProperties(roomProps);
+            PhotonNetwork.CurrentRoom.SetCustomProperties(props);
 
-            ApplyData(city, dateTime);
+            ApplyData(city.cityName, cityTime);
         }
     }
 
-    void ApplyData(string city, DateTime time)
+    void ApplyData(string cityName, DateTime cityTime)
     {
-        CurrentCityName = city;
-        CurrentTime = time;
+        CurrentCityName = cityName;
+        CurrentTime = cityTime;
 
         Debug.Log($"Ciudad: {CurrentCityName}");
         Debug.Log($"Hora: {CurrentTime:HH:mm:ss}");
@@ -117,9 +132,9 @@ public class WorldTimeManager : MonoBehaviourPunCallbacks
         float sunAngle =
             (hour / 24f) * 360f - 90f;
 
-        Debug.Log($"Ángulo del Sol: {sunAngle}");
+        Debug.Log($"Sun Angle: {sunAngle}");
 
-        // Ejemplo:
+        // Tu Directional Light:
         // sunLight.transform.rotation =
         //     Quaternion.Euler(sunAngle, 170f, 0f);
     }
@@ -144,7 +159,13 @@ public class WorldTimeManager : MonoBehaviourPunCallbacks
         ApplyData(city, time);
     }
 
-    public override void OnRoomPropertiesUpdate(PhotonHashtable propertiesThatChanged)
+    public override void OnJoinedRoom()
+    {
+        LoadExistingProperties();
+    }
+
+    public override void OnRoomPropertiesUpdate(
+        PhotonHashtable propertiesThatChanged)
     {
         if (propertiesThatChanged.ContainsKey(CITY_KEY))
         {
