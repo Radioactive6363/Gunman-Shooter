@@ -9,88 +9,139 @@ public class GameUIManager : MonoBehaviour
     [Header("UI Elements")]
     [SerializeField] private TextMeshProUGUI stateInfoText;
     [SerializeField] private TextMeshProUGUI countdownText;
-    
-    [Header("Panel Elements")]
-    [SerializeField] private GameObject endMatchPanel;
-    [SerializeField] private TextMeshProUGUI winnerText;
+    [SerializeField] private TextMeshProUGUI SVeventTxt;
 
-    private Coroutine _countdownCoroutine;
+    private Coroutine _phaseCoroutine;
+    private Coroutine _serverMessageCoroutine;
 
     private void OnEnable()
     {
-        GameManager.OnGameStateChanged      += HandleGameStateChanged;
-        GameManager.OnDuelCountdownStarted  += HandleCountdownStarted;
-        GameManager.OnLobbyCountdownTick     += HandleLobbyCountdownTick;
+        DuelSpawner.OnPhaseInstruction += HandlePhaseInstruction;
+        GameManager.OnLobbyCountdownTick += HandleLobbyCountdownTick;
+        GameManager.OnGameStateChanged += HandleGameStateChanged;
+        
+        GameManager.OnServerMessageDeclared += HandleServerMessage;
+        
+        GameManager.OnRoundWinnerDeclared += HandleRoundWinner;
+        GameManager.OnMatchWinnerDeclared += HandleMatchWinner;
+        
+        GameManager.OnMatchCancelled += HandleMatchCancelled;
     }
 
     private void OnDisable()
     {
-        GameManager.OnGameStateChanged      -= HandleGameStateChanged;
-        GameManager.OnDuelCountdownStarted  -= HandleCountdownStarted;
-        GameManager.OnLobbyCountdownTick     -= HandleLobbyCountdownTick;
+        DuelSpawner.OnPhaseInstruction -= HandlePhaseInstruction;
+        GameManager.OnLobbyCountdownTick -= HandleLobbyCountdownTick;
+        GameManager.OnGameStateChanged -= HandleGameStateChanged;
+
+        GameManager.OnServerMessageDeclared -= HandleServerMessage;
+
+        GameManager.OnRoundWinnerDeclared -= HandleRoundWinner;
+        GameManager.OnMatchWinnerDeclared -= HandleMatchWinner;
+        
+        GameManager.OnMatchCancelled        -= HandleMatchCancelled;
     }
 
     private void Start()
     {
         if (countdownText != null)  countdownText.text  = "";
-        if (endMatchPanel != null)  endMatchPanel.SetActive(false);
-        if (stateInfoText != null)  stateInfoText.text  = "Waiting Player...";
-        if (winnerText != null)     winnerText.text     = "";
+        if (stateInfoText != null)  stateInfoText.text  = "Loading...";
+        if (SVeventTxt != null)     SVeventTxt.text     = "";
     }
 
     private void HandleGameStateChanged(GameState newState)
     {
-        switch (newState)
+        if (newState == GameState.Duel)
         {
-            case GameState.WaitingForPlayers:
-                if (stateInfoText != null) stateInfoText.text = "Waiting for Players to Ready Up...";
-                if (countdownText != null) countdownText.text = "";
-                break;
-
-            case GameState.Preparation:
-                if (stateInfoText != null) stateInfoText.text = "¡Ready for Duel!";
-                break;
-
-            case GameState.Duel:
-                if (stateInfoText != null) stateInfoText.text = "¡Duel On Course!";
-                if (countdownText != null) countdownText.text = "";
-                break;
-
-            case GameState.PostDuel:
-                if (stateInfoText != null) stateInfoText.text = "Match Ended...";
-                break;
-
-            case GameState.MatchOver:
-                if (stateInfoText != null) stateInfoText.text = "End of Match";
-                ShowEndMatchUI();
-                break;
+            if (countdownText != null) countdownText.text = "";
+            
+            if (gameObject.activeInHierarchy) StartCoroutine(ClearDrawTextRoutine());
+        }
+        else if (newState == GameState.WaitingForPlayers)
+        {
+            if (stateInfoText != null) 
+            {
+                stateInfoText.color = Color.white;
+                stateInfoText.text = "Waiting for Players to Ready Up...";
+            }
         }
     }
     
-    private void HandleCountdownStarted(int duration)
+    private IEnumerator ClearDrawTextRoutine()
     {
-        if (_countdownCoroutine != null)
-            StopCoroutine(_countdownCoroutine);
-        _countdownCoroutine = StartCoroutine(CountDownCoroutine(duration));
+        yield return new WaitForSeconds(1f);
+        if (stateInfoText != null && stateInfoText.text == "DRAW!") 
+        {
+            stateInfoText.text = "";
+        }
+    }
+    
+    private void HandleRoundWinner(string winnerName)
+    {
+        if (stateInfoText != null) 
+        {
+            stateInfoText.color = Color.yellow;
+            stateInfoText.text = $"¡{winnerName} has survived the round!";
+        }
     }
 
-    private IEnumerator CountDownCoroutine(int duration)
+    private void HandleMatchWinner(string winnerName)
     {
-        int timer = duration;
-        while (timer > 0)
+        if (stateInfoText != null) 
         {
-            if (countdownText != null) countdownText.text = timer.ToString();
-            yield return new WaitForSeconds(1f);
-            timer--;
+            stateInfoText.color = Color.green;
+            stateInfoText.text = $"¡Final Victory!\nWinner is: {winnerName}";
+        }
+        if (countdownText != null) countdownText.text = "";
+    }
+    
+    private void HandleServerMessage(string message)
+    {
+        if (SVeventTxt == null) return;
+
+        SVeventTxt.text = message;
+
+        if (_serverMessageCoroutine != null) StopCoroutine(_serverMessageCoroutine);
+        _serverMessageCoroutine = StartCoroutine(ClearServerMessageRoutine());
+    }
+
+    private IEnumerator ClearServerMessageRoutine()
+    {
+        yield return new WaitForSeconds(3.5f);
+        if (SVeventTxt != null) SVeventTxt.text = "";
+    }
+    
+    private void HandlePhaseInstruction(string instruction, float duration)
+    {
+        if (stateInfoText != null) 
+        {
+            stateInfoText.color = Color.white;
+            stateInfoText.text = instruction;
         }
 
-        if (countdownText != null)
+        if (_phaseCoroutine != null) StopCoroutine(_phaseCoroutine);
+        
+        if (duration > 0)
         {
-            countdownText.text = "¡GO!";
-            yield return new WaitForSeconds(0.8f);
-            countdownText.text = "";
+            _phaseCoroutine = StartCoroutine(DecimalCountdownRoutine(duration));
         }
-        _countdownCoroutine = null;
+        else
+        {
+            if (countdownText != null) countdownText.text = "";
+        }
+    }
+
+    private IEnumerator DecimalCountdownRoutine(float duration)
+    {
+        float timer = duration;
+        while (timer > 0)
+        {
+            if (countdownText != null) countdownText.text = timer.ToString("F1");
+            yield return null;
+            timer -= Time.deltaTime;
+        }
+        
+        if (countdownText != null) countdownText.text = "";
     }
     
     private void HandleLobbyCountdownTick(int remaining)
@@ -108,13 +159,15 @@ public class GameUIManager : MonoBehaviour
             if (countdownText != null) countdownText.text = remaining.ToString();
         }
     }
-
-    private void ShowEndMatchUI()
+    
+    private void HandleMatchCancelled()
     {
-        if (endMatchPanel != null)
+        if (stateInfoText != null) 
         {
-            endMatchPanel.SetActive(true);
-            if (winnerText != null) winnerText.text = "¡Match Ended!";
+            stateInfoText.color = Color.red;
+            stateInfoText.text = "Game Canceled\nNot Enough Players.";
         }
+        
+        if (countdownText != null) countdownText.text = "";
     }
 }

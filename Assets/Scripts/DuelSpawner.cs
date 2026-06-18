@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Photon.Pun;
@@ -6,6 +7,8 @@ using UnityEngine;
 
 public class DuelSpawner : MonoBehaviourPunCallbacks
 {
+    public static event Action<string, float> OnPhaseInstruction;
+
     [Header("Spawn Settings")]
     [SerializeField] private Transform arenaCenter;
     [SerializeField] private float spawnRadius = 5f;
@@ -44,6 +47,8 @@ public class DuelSpawner : MonoBehaviourPunCallbacks
         GameManager.Instance.SetDuelStartDelay(totalPreDuelTime);
 
         TeleportToSlot();
+        
+        GameManager.Instance.StartDuelCountdown();
         StartCoroutine(PreDuelSequence());
     }
     
@@ -82,13 +87,6 @@ public class DuelSpawner : MonoBehaviourPunCallbacks
             _localPlayerTransform.rotation = Quaternion.LookRotation(dir);
     }
 
-    private Quaternion GetRotationFacingCenter()
-    {
-        Vector3 dir = _centerPoint - _localPlayerTransform.position;
-        dir.y = 0f;
-        return dir.sqrMagnitude > 0.001f ? Quaternion.LookRotation(dir) : _localPlayerTransform.rotation;
-    }
-
     private Quaternion GetRotationFacingAway()
     {
         Vector3 dir = _localPlayerTransform.position - _centerPoint;
@@ -113,15 +111,17 @@ public class DuelSpawner : MonoBehaviourPunCallbacks
     private IEnumerator PreDuelSequence()
     {
         _restrictor.SetState(DuelState.FullLock);
-        
+        OnPhaseInstruction?.Invoke("Look Each Other", faceCenterDuration);
         yield return new WaitForSeconds(faceCenterDuration);
         
+        OnPhaseInstruction?.Invoke("Turn Around...", 0f);
         yield return StartCoroutine(SmoothRotateTo(GetRotationFacingAway()));
-
-        GameManager.Instance.StartDuelCountdown();
+        
         _restrictor.SetState(DuelState.WalkOnly);
+        OnPhaseInstruction?.Invoke("Walk forward...", restrictedWalkDuration);
         yield return new WaitForSeconds(restrictedWalkDuration);
         
         _restrictor.SetState(DuelState.Free);
+        OnPhaseInstruction?.Invoke("DRAW!", 0f); 
     }
 }

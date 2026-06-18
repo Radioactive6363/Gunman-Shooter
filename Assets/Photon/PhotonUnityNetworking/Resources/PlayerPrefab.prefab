@@ -148,9 +148,10 @@ GameObject:
   - component: {fileID: 4354986429267612285}
   - component: {fileID: 4354986429267612286}
   - component: {fileID: 4354986429267612287}
-  - component: {fileID: 4354986429267612272}
   - component: {fileID: 8631872013234003579}
+  - component: {fileID: 4354986429267612272}
   - component: {fileID: -86988768601609552}
+  - component: {fileID: 1872798340118894549}
   - component: {fileID: 4354986429267612281}
   - component: {fileID: 4354986429267612282}
   m_Layer: 0
@@ -261,18 +262,6 @@ MonoBehaviour:
   playerCamera: {fileID: 4354986429489223786}
   baseFOV: 60
   aimFOV: 40
---- !u!114 &4354986429267612272
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4354986429267612274}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 940f2425ab4a5f044ad0dde93aad6692, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &8631872013234003579
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -287,6 +276,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cameraTransform: {fileID: 4354986429489223788}
   maxChargeTime: 2
+--- !u!114 &4354986429267612272
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4354986429267612274}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 940f2425ab4a5f044ad0dde93aad6692, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &-86988768601609552
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -299,6 +300,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 395a0b7b765a505499ac52792202c250, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1872798340118894549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4354986429267612274}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bcae9af36ef23c24fb5457ef7a37ce22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerName: {fileID: 5449399185739327751}
 --- !u!114 &4354986429267612281
 MonoBehaviour:
   m_ObjectHideFlags: 0

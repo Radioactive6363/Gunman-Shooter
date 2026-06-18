@@ -10,11 +10,15 @@ public class GameManager : MonoBehaviourPunCallbacks
 {
     public static GameManager Instance;
     public static event Action<GameState> OnGameStateChanged;
-    public static event Action<int> OnDuelCountdownStarted;
     public static event Action<int> OnLobbyCountdownTick;
+    public static event Action<string> OnServerMessageDeclared;
+    public static event Action<string> OnRoundWinnerDeclared;
+    public static event Action<string> OnMatchWinnerDeclared;
+    public static event Action OnMatchCancelled;
     
     [Header("Timer Settings")]
     [SerializeField] private int timeTillDuel = 3;
+    [SerializeField] private int lobbyCountdownSeconds = 5;
 
     [Header("Scene Management")]
     [SerializeField] private string[] duelScenes = { "DesertScene", "JungleScene", "CaveScene" };
@@ -32,25 +36,10 @@ public class GameManager : MonoBehaviourPunCallbacks
     
     private const int WINS_NEEDED = 2;
     private const string READY_PROP_KEY = "IsReady";
-    
+
+    private Coroutine _lobbyCountdownCoroutine;
     private GameObject _localPlayerInstance;
     public  GameObject LocalPlayer => _localPlayerInstance;
-    
-    public int TimeTillDuel => timeTillDuel;
-    
-    public void SetDuelStartDelay(float seconds)
-    {
-        timeTillDuel = Mathf.CeilToInt(seconds);
-        Log.Info($"[GameManager] timeTillDuel sync: {timeTillDuel}s");
-    }
-    
-    public void StartDuelCountdown()
-    {
-        OnDuelCountdownStarted?.Invoke(timeTillDuel);
-        
-        if (PhotonNetwork.IsMasterClient)
-            StartCoroutine(DuelState());
-    }
 
     private void Awake()
     {
@@ -63,6 +52,18 @@ public class GameManager : MonoBehaviourPunCallbacks
         {
             Destroy(gameObject);
         }
+    }
+    
+    public override void OnEnable()
+    {
+        base.OnEnable();
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    public override void OnDisable()
+    {
+        base.OnDisable();
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
     
     private void Start()
@@ -85,25 +86,25 @@ public class GameManager : MonoBehaviourPunCallbacks
             }
         }
     }
+    
+    public void SetDuelStartDelay(float seconds)
+    {
+        timeTillDuel = Mathf.CeilToInt(seconds);
+        Log.Info($"[GameManager] timeTillDuel sync: {timeTillDuel}s");
+    }
+    
+    public void StartDuelCountdown()
+    {
+        if (PhotonNetwork.IsMasterClient)
+            StartCoroutine(DuelState());
+    }
 
     private void SetGameState(GameState newState)
     {
         currentState = newState;
         OnGameStateChanged?.Invoke(newState);
     }
-
-    public override void OnEnable()
-    {
-        base.OnEnable();
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
-
-    public override void OnDisable()
-    {
-        base.OnDisable();
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-    }
-
+    
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (scene.name == lobbyRoomSceneName)
@@ -159,9 +160,6 @@ public class GameManager : MonoBehaviourPunCallbacks
             CheckAllPlayersReady();
         }
     }
-    
-    [SerializeField] private int lobbyCountdownSeconds = 5;
-    private Coroutine _lobbyCountdownCoroutine;
 
     private void CheckAllPlayersReady()
     {
@@ -169,7 +167,7 @@ public class GameManager : MonoBehaviourPunCallbacks
 
         int playerCount = PhotonNetwork.CurrentRoom.PlayerCount;
         int readyCount  = 0;
-        
+    
         foreach (Player p in PhotonNetwork.PlayerList)
         {
             if (p.CustomProperties.TryGetValue(READY_PROP_KEY, out object isReady) && (bool)isReady)
@@ -177,8 +175,8 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
 
         Log.Info($"Players Ready: {readyCount}/{playerCount}");
-
-        bool canStart = playerCount == 1 ? readyCount == 1 : readyCount == playerCount;
+        
+        bool canStart = (playerCount >= 2) && (readyCount == playerCount);
 
         if (canStart)
         {
@@ -192,17 +190,14 @@ public class GameManager : MonoBehaviourPunCallbacks
         {
             StopCoroutine(_lobbyCountdownCoroutine);
             _lobbyCountdownCoroutine = null;
-            
-            Log.Info("Lobby countdown cancelled - player unreadied");
+        
+            Log.Info("Lobby countdown cancelled - player unreadied or not enough players");
             photonView.RPC("CancelLobbyCountdownRPC", RpcTarget.All);
         }
     }
 
     [PunRPC]
     private void SetPreparationStateRPC() => SetGameState(GameState.Preparation);
-
-    [PunRPC]
-    private void SetWaitingStateRPC() => SetGameState(GameState.WaitingForPlayers);
 
     [PunRPC]
     private void CancelLobbyCountdownRPC()
@@ -214,15 +209,24 @@ public class GameManager : MonoBehaviourPunCallbacks
     private IEnumerator LobbyCountdownCoroutine()
     {
         int remaining = lobbyCountdownSeconds;
+
         while (remaining > 0)
         {
-            OnLobbyCountdownTick?.Invoke(remaining);
+            photonView.RPC(nameof(UpdateLobbyCountdownRPC), RpcTarget.All, remaining);
             yield return new WaitForSeconds(1f);
             remaining--;
         }
-        OnLobbyCountdownTick?.Invoke(0);
+
+        photonView.RPC(nameof(UpdateLobbyCountdownRPC), RpcTarget.All, 0);
         _lobbyCountdownCoroutine = null;
+
         LoadNextDuelScene();
+    }
+    
+    [PunRPC]
+    private void UpdateLobbyCountdownRPC(int remaining)
+    {
+        OnLobbyCountdownTick?.Invoke(remaining);
     }
     
     private void ResetReadyState()
@@ -236,9 +240,6 @@ public class GameManager : MonoBehaviourPunCallbacks
     
     private IEnumerator SpawnWhenReady(string sceneName)
     {
-        while (Instance == null || !photonView.IsMine && !photonView.IsOwnerActive)
-            yield return null;
-
         SpawnPlayer();
         SetGameState(GameState.Preparation);
         
@@ -246,38 +247,21 @@ public class GameManager : MonoBehaviourPunCallbacks
         Cursor.visible = false;
         
         Log.Info($"Load Level: {sceneName}. Preparation.");
+        yield break;
     }
     
-
     private void SpawnPlayer()
     {
         Vector3 spawnPosition = new Vector3(0, 1f, 0);
         _localPlayerInstance = PhotonNetwork.Instantiate("PlayerPrefab", spawnPosition, Quaternion.identity);
-        SetLocalPlayerName();
-    }
-
-    private void SetLocalPlayerName()
-    {
-        var label = _localPlayerInstance.GetComponentInChildren<TMPro.TextMeshPro>();
-        if (label != null)
-            label.text = PhotonNetwork.LocalPlayer.NickName;
-        else
-            Log.Warning("[GameManager] No TextMeshPro name label found on PlayerPrefab.");
     }
 
     private void LoadNextDuelScene()
     {
         if (!PhotonNetwork.IsMasterClient) return;
-
-        if (_currentSceneIndex < duelScenes.Length)
-        {
-            PhotonNetwork.LoadLevel(duelScenes[_currentSceneIndex]);
-            _currentSceneIndex++;
-        }
-        else
-        {
-            PhotonNetwork.LoadLevel(duelScenes[0]);
-        }
+        
+        PhotonNetwork.LoadLevel(duelScenes[_currentSceneIndex]);
+        _currentSceneIndex = (_currentSceneIndex + 1) % duelScenes.Length;
     }
 
     private IEnumerator DuelState()
@@ -306,53 +290,56 @@ public class GameManager : MonoBehaviourPunCallbacks
         if (_alivePlayers.Contains(deadPlayerActorNr))
         {
             _alivePlayers.Remove(deadPlayerActorNr);
+            Player deadPlayer = PhotonNetwork.CurrentRoom.GetPlayer(deadPlayerActorNr);
+            
+            if (deadPlayer != null)
+            {
+                photonView.RPC("BroadcastServerMessageRPC", RpcTarget.All, $"¡{deadPlayer.NickName} has fallen!");
+            }
             Log.Info($"Player {deadPlayerActorNr} eliminated. {_alivePlayers.Count} players alive.");
         }
         
         if (_alivePlayers.Count > 1) return;
         
-        SetGameState(GameState.PostDuel);
-
+        int survivor = -1;
         if (_alivePlayers.Count == 1)
         {
-            int survivor = _alivePlayers[0];
-        
-            if (!_playerWins.ContainsKey(survivor))
-                _playerWins[survivor] = 0;
-            
+            survivor = _alivePlayers[0];
+            if (!_playerWins.ContainsKey(survivor)) _playerWins[survivor] = 0;
             _playerWins[survivor]++;
-            Log.Info($"Player {survivor} has won");
-        }
-        else
-        {
-            Log.Info("Tie, no Survivors.");
         }
         
         int[] actorNrs = new int[_playerWins.Count];
         int[] wins = new int[_playerWins.Count];
         int i = 0;
         foreach (var kvp in _playerWins) { actorNrs[i] = kvp.Key; wins[i] = kvp.Value; i++; }
-
-        photonView.RPC("SyncScoreRPC", RpcTarget.All, actorNrs, wins);
         
-        int winner = -1;
+        photonView.RPC("SyncRoundResultRPC", RpcTarget.All, survivor, actorNrs, wins);
+        
+        int matchWinner = -1;
         foreach (var kvp in _playerWins)
         {
-            if (kvp.Value >= WINS_NEEDED) { winner = kvp.Key; break; }
+            if (kvp.Value >= WINS_NEEDED) { matchWinner = kvp.Key; break; }
         }
-
-        if (winner != -1)
-            photonView.RPC("EndMatchRPC", RpcTarget.MasterClient);
+        
+        if (matchWinner != -1)
+            photonView.RPC("EndMatchRPC", RpcTarget.All, matchWinner);
         else
             StartCoroutine(ResetRoundRoutine());
     }
 
     [PunRPC]
-    private void SyncScoreRPC(int[] actorNrs, int[] wins)
+    private void SyncRoundResultRPC(int roundWinnerActorNr, int[] actorNrs, int[] wins)
     {
+        SetGameState(GameState.PostDuel);
+
         _playerWins.Clear();
         for (int i = 0; i < actorNrs.Length; i++)
             _playerWins[actorNrs[i]] = wins[i];
+        
+        string winnerName = roundWinnerActorNr != -1 ? PhotonNetwork.CurrentRoom.GetPlayer(roundWinnerActorNr).NickName : "No one (Draw)";
+        
+        OnRoundWinnerDeclared?.Invoke(winnerName);
     }
 
     private IEnumerator ResetRoundRoutine()
@@ -363,10 +350,18 @@ public class GameManager : MonoBehaviourPunCallbacks
     }
     
     [PunRPC]
-    private void EndMatchRPC()
+    private void EndMatchRPC(int matchWinnerActorNr)
     {
-        Log.Info("Match ended, returning to lobby.");
-        StartCoroutine(ReturnToLobbyRoutine());
+        SetGameState(GameState.MatchOver);
+        
+        string winnerName = matchWinnerActorNr != -1 
+            ? PhotonNetwork.CurrentRoom.GetPlayer(matchWinnerActorNr).NickName 
+            : "Unknown";
+
+        OnMatchWinnerDeclared?.Invoke(winnerName);
+        
+        if (PhotonNetwork.IsMasterClient)
+            StartCoroutine(ReturnToLobbyRoutine());
     }
 
     private IEnumerator ReturnToLobbyRoutine()
@@ -375,7 +370,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         
         if (PhotonNetwork.IsMasterClient)
         {
-            PhotonNetwork.Destroy(gameObject);
+            Destroy(gameObject);
             PhotonNetwork.LoadLevel(lobbyRoomSceneName);
         }
         Instance = null;
@@ -384,12 +379,45 @@ public class GameManager : MonoBehaviourPunCallbacks
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
         Log.Info($"Player {otherPlayer.NickName} disconnected.");
-        if (PhotonNetwork.CurrentRoom.PlayerCount < 2)
-            PhotonNetwork.LeaveRoom();
+        
+        if (PhotonNetwork.IsMasterClient)
+        {
+            photonView.RPC("BroadcastServerMessageRPC", RpcTarget.All, $"{otherPlayer.NickName} has fled the duel");
+
+            if (PhotonNetwork.CurrentRoom.PlayerCount < 2)
+            {
+                photonView.RPC("CancelMatchRPC", RpcTarget.All);
+            }
+            else
+            {
+                if (currentState == GameState.Duel && _alivePlayers.Contains(otherPlayer.ActorNumber))
+                {
+                    RegisterPlayerDeath(otherPlayer.ActorNumber);
+                }
+            }
+        }
+    }
+    
+    [PunRPC]
+    private void CancelMatchRPC()
+    {
+        SetGameState(GameState.MatchOver);
+        OnMatchCancelled?.Invoke();
+        
+        if (PhotonNetwork.IsMasterClient)
+        {
+            StartCoroutine(ReturnToLobbyRoutine()); 
+        }
     }
 
     public override void OnLeftRoom()
     {
         SceneManager.LoadScene(mainMenuSceneName);
+    }
+    
+    [PunRPC]
+    private void BroadcastServerMessageRPC(string message)
+    {
+        OnServerMessageDeclared?.Invoke(message);
     }
 }

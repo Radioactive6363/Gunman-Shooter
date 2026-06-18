@@ -61,6 +61,11 @@ MonoBehaviour:
   - CancelLobbyCountdownRPC
   - SetPreparationStateRPC
   - SetWaitingStateRPC
+  - SetNameRPC
+  - UpdateLobbyCountdownRPC
+  - SyncRoundResultRPC
+  - BroadcastServerMessageRPC
+  - CancelMatchRPC
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

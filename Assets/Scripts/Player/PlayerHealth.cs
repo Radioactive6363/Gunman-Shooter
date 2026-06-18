@@ -1,9 +1,18 @@
+using System;
 using Photon.Pun;
 
 public class PlayerHealth : MonoBehaviourPun, IDamageable 
 {
     private bool isDead = false;
-    
+    private PlayerController _controller;
+    private PlayerShooting _shooting;
+
+    private void Awake()
+    {
+        _controller = GetComponent<PlayerController>();
+        _shooting = GetComponent<PlayerShooting>();
+    }
+
     public void TakeDamage()
     {
         photonView.RPC("TakeDamageRPC", RpcTarget.All);
@@ -20,8 +29,8 @@ public class PlayerHealth : MonoBehaviourPun, IDamageable
     {
         isDead = true;
     
-        GetComponent<PlayerController>().enabled = false;
-        GetComponent<PlayerShooting>().enabled = false;
+        _controller.enabled = false;
+        _shooting.enabled = false;
     
         Log.Info($"Player {photonView.Owner.NickName} has died.");
     

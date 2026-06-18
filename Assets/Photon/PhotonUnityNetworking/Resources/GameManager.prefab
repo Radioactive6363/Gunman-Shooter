@@ -46,6 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   timeTillDuel: 3
+  lobbyCountdownSeconds: 5
   duelScenes:
   - DesertScene
   - JungleScene

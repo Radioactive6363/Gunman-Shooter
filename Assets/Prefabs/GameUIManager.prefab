@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2933063686269552660}
-  - component: {fileID: 7246577726650627897}
   m_Layer: 0
   m_Name: GameUIManager
   m_TagString: Untagged
@@ -33,24 +32,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7246577726650627897
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 774968013958875728}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 692a13259f7bfd144bec227bd4e8f4bf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  warningPanel: {fileID: 3604124550572713396}
-  warningText: {fileID: 3604124550572713398}
-  pingWarningThreshold: 200
-  pingCriticalThreshold: 500
-  colorWarning: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  colorCritical: {r: 1, g: 0, b: 0, a: 1}
 --- !u!1 &1914423630045361693
 GameObject:
   m_ObjectHideFlags: 0
@@ -64,6 +45,7 @@ GameObject:
   - component: {fileID: 3061691833020008990}
   - component: {fileID: 3801214086241766811}
   - component: {fileID: 6825625998526354123}
+  - component: {fileID: 7654651838841940162}
   m_Layer: 0
   m_Name: CanvasGameUI
   m_TagString: Untagged
@@ -170,8 +152,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stateInfoText: {fileID: 1227660512852995934}
   countdownText: {fileID: 6532741072220529893}
-  endMatchPanel: {fileID: 0}
-  winnerText: {fileID: 2335514589697955291}
+  SVeventTxt: {fileID: 2335514589697955291}
+--- !u!114 &7654651838841940162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1914423630045361693}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 692a13259f7bfd144bec227bd4e8f4bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  warningPanel: {fileID: 3604124550572713396}
+  warningText: {fileID: 3604124550572713398}
+  pingWarningThreshold: 200
+  pingCriticalThreshold: 500
+  colorWarning: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  colorCritical: {r: 1, g: 0, b: 0, a: 1}
 --- !u!1 &2528857297529622904
 GameObject:
   m_ObjectHideFlags: 0
@@ -207,7 +206,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 292}
+  m_AnchoredPosition: {x: 0, y: -233}
   m_SizeDelta: {x: 800, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8550013841626115188
@@ -454,7 +453,7 @@ GameObject:
   - component: {fileID: 5632641158818231845}
   - component: {fileID: 2335514589697955291}
   m_Layer: 0
-  m_Name: WinnerText
+  m_Name: SVText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -477,7 +476,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -225}
+  m_AnchoredPosition: {x: 0, y: 306}
   m_SizeDelta: {x: 800, y: 200}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5632641158818231845
@@ -508,7 +507,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Winner Text
+  m_text: SVText
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -517,8 +516,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4281204480
-  m_fontColor: {r: 0, g: 1, b: 0.17649412, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -613,7 +612,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 400, y: 400}
+  m_SizeDelta: {x: 800, y: 400}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3036918840520450215
 CanvasRenderer:

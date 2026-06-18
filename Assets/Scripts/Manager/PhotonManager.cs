@@ -80,10 +80,10 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         {
             PhotonNetwork.NetworkingClient.LoadBalancingPeer.IsSimulationEnabled = true;
             var settings = PhotonNetwork.NetworkingClient.LoadBalancingPeer.NetworkSimulationSettings;
-            settings.IncomingLag = 100;
-            settings.OutgoingLag = 200;
-            settings.IncomingJitter = 25;
-            settings.OutgoingJitter = 25;
+            settings.IncomingLag = (int)incomeLag;
+            settings.OutgoingLag = (int)outcomeLag;
+            settings.IncomingJitter = (int)incomeJitter;
+            settings.OutgoingJitter = (int)outcomeJitter;
             settings.IncomingLossPercentage = 0;
             settings.OutgoingLossPercentage = 0;
         }
@@ -207,12 +207,6 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         CheckRoomCreationFailedError(returnCode, message);
         string friendlyMessage = GetFriendlyCreateError(returnCode, message);
         OnJoinRoomFailedEvent?.Invoke(returnCode, friendlyMessage);
-    }
-
-    public void RoomSearchRefresh()
-    {
-        RoomOptions roomOptions = new RoomOptions { IsVisible = false, EmptyRoomTtl = 10000, CleanupCacheOnLeave = true};
-        PhotonNetwork.CreateRoom(UnityEngine.Random.Range(0f,1000f).ToString(), roomOptions);
     }
     
     #endregion

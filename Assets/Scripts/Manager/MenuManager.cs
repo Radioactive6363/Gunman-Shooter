@@ -34,7 +34,7 @@ public class MenuManager : MonoBehaviour
         PhotonManager.Instance.OnConnectedToMasterEvent += OnFinishedLoading;
         PhotonManager.Instance.OnJoinRoomFailedEvent += OnJoinRoomError;
         PhotonManager.Instance.OnDisconnectedEvent += OnDisconnectedError;
-        LoadName();
+        playerName = PlayerPrefs.GetString("PlayerName", "manaos");
         UpdateName();
 
         HideAllScreens();
@@ -156,11 +156,6 @@ public class MenuManager : MonoBehaviour
         PlayerPrefs.Save();
         PhotonNetwork.NickName = PlayerPrefs.GetString("PlayerName");
         UpdateName();
-    }
-
-    public void LoadName()
-    {
-        playerName = PlayerPrefs.GetString("PlayerName", "manaos");
     }
     
     private void UpdateName()
