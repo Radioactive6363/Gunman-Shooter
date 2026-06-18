@@ -10,7 +10,8 @@ public class DynamiteProjectile : MonoBehaviourPun, IPunInstantiateMagicCallback
     [SerializeField] private LayerMask obstacleLayer;
 
     [Header("Visual Settings")]
-    [SerializeField] private Transform explosionAreaIndicator; 
+    [SerializeField] private GameObject explosionEffectPrefab; 
+    [SerializeField] private float explosionVisualDuration = 2f; 
 
     private int _throwerActorNr = -1;
 
@@ -25,11 +26,6 @@ public class DynamiteProjectile : MonoBehaviourPun, IPunInstantiateMagicCallback
 
     private void Start()
     {
-        if (explosionAreaIndicator != null)
-        {
-            explosionAreaIndicator.localScale = Vector3.one * (explosionRadius * 2f);
-        }
-        
         if (PhotonNetwork.IsMasterClient)
         {
             StartCoroutine(ExplodeRoutine());
@@ -63,7 +59,7 @@ public class DynamiteProjectile : MonoBehaviourPun, IPunInstantiateMagicCallback
             }
         }
         
-        photonView.RPC("PlayExplosionEffectsRPC", RpcTarget.All);
+        photonView.RPC(nameof(PlayExplosionEffectsRPC), RpcTarget.All);
         
         PhotonNetwork.Destroy(gameObject);
     }
@@ -71,9 +67,13 @@ public class DynamiteProjectile : MonoBehaviourPun, IPunInstantiateMagicCallback
     [PunRPC]
     private void PlayExplosionEffectsRPC()
     {
-        if (explosionAreaIndicator != null)
+        if (explosionEffectPrefab != null)
         {
-            explosionAreaIndicator.gameObject.SetActive(false);
+            GameObject fx = Instantiate(explosionEffectPrefab, transform.position, Quaternion.identity);
+            
+            fx.transform.localScale = Vector3.one * (explosionRadius * 2f);
+            
+            Destroy(fx, explosionVisualDuration);
         }
     }
 }
