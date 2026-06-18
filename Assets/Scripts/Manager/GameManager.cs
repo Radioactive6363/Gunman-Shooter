@@ -77,6 +77,8 @@ public class GameManager : MonoBehaviourPunCallbacks
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+            Instance = null;
+            Destroy(gameObject);
         }
         else
         {
