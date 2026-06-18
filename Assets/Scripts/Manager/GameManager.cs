@@ -168,7 +168,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         _player2Wins = 0;
         _currentSceneIndex = 0;
         
-        if (PhotonNetwork.IsConnected && PhotonNetwork.InRoom)
+        if (PhotonNetwork.IsConnected && PhotonNetwork.InRoom && PhotonNetwork.NetworkClientState != ClientState.Leaving)
         {
             PhotonNetwork.LeaveRoom();
         }
