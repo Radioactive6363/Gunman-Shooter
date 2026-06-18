@@ -187,9 +187,8 @@ public class GameManager : MonoBehaviourPunCallbacks
         _currentSceneIndex = 0;
         if (PhotonNetwork.IsMasterClient)
         {
-            PhotonNetwork.LeaveRoom();
+            PhotonNetwork.LoadLevel(lobbyRoomSceneName);
         }
-
     }
 
     public override void OnPlayerLeftRoom(Player otherPlayer)
@@ -197,8 +196,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         Log.Info($"Player {otherPlayer.NickName} disconnected.");
         if (PhotonNetwork.CurrentRoom.PlayerCount < 2)
         {
-            SceneManager.LoadScene(mainMenuSceneName);
-
+            PhotonNetwork.LeaveRoom();
         }
     }
 
@@ -206,7 +204,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     {
         SceneManager.LoadScene(mainMenuSceneName);
     }
-
+    
     private void Initialize()
     {
         if (SceneManager.GetActiveScene().name == lobbyRoomSceneName)
