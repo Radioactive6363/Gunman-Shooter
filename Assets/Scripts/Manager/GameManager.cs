@@ -1,10 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Unity.RemoteConfig;
+using Unity.Services.RemoteConfig;
 
 public class GameManager : MonoBehaviourPunCallbacks
 {
@@ -29,6 +32,9 @@ public class GameManager : MonoBehaviourPunCallbacks
     
     [Header("Game State")]
     [SerializeField] private GameState currentState;
+    
+    public struct userAttributes { }
+    public struct appAttributes { }
 
     private int _currentSceneIndex;
     private List<int> _alivePlayers = new List<int>();
@@ -47,6 +53,8 @@ public class GameManager : MonoBehaviourPunCallbacks
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            
+            _ = InitializeRemoteConfig();
         }
         else
         {
@@ -85,6 +93,39 @@ public class GameManager : MonoBehaviourPunCallbacks
                 PhotonNetwork.LeaveRoom();
             }
         }
+    }
+    
+    private async Task InitializeRemoteConfig()
+    {
+        try
+        {
+            var task = await RemoteConfigService.Instance.FetchConfigsAsync(new userAttributes(), new appAttributes());
+            
+            int seed = RemoteConfigService.Instance.appConfig.GetInt("DesiredGameOrder");
+            
+            if (seed != 0)
+            {
+                ShuffleLevels(seed);
+                Log.Info($"[LiveOps] Maps Swapped with: {seed}");
+            }
+        }
+        catch (Exception e)
+        {
+            Log.Warning($"[LiveOps] Cant Apply Remote Config: {e.Message}");
+        }
+    }
+    
+    private void ShuffleLevels(int seed)
+    {
+        System.Random rng = new System.Random(seed);
+        int n = duelScenes.Length;
+        while (n > 1)
+        {
+            n--;
+            int k = rng.Next(n + 1);
+            (duelScenes[k], duelScenes[n]) = (duelScenes[n], duelScenes[k]);
+        }
+        Log.Info($"[LiveOps] Levels Mixed with seed: {seed}");
     }
     
     public void SetDuelStartDelay(float seconds)
