@@ -5,7 +5,7 @@ public class SpearProjectile : MonoBehaviourPun
 {
     private bool hasHit = false;
 
-    void OnCollisionEnter(Collision collision)
+    private void OnCollisionEnter(Collision collision)
     {
         if (!PhotonNetwork.IsMasterClient || hasHit) return;
 

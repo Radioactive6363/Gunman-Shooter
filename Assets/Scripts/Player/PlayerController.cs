@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviourPun
     
     private float xRotation = 0f;
 
-    void Start()
+    private void Start()
     {
         if (!photonView.IsMine)
         {
@@ -20,7 +20,7 @@ public class PlayerController : MonoBehaviourPun
         Cursor.lockState = CursorLockMode.Locked;
     }
 
-    void Update()
+    private void Update()
     {
         if (!photonView.IsMine) return;
 
@@ -28,7 +28,7 @@ public class PlayerController : MonoBehaviourPun
         HandleLook();
     }
 
-    void HandleMovement()
+    private void HandleMovement()
     {
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
@@ -37,7 +37,7 @@ public class PlayerController : MonoBehaviourPun
         transform.position += move * speed * Time.deltaTime;
     }
 
-    void HandleLook()
+    private void HandleLook()
     {
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;

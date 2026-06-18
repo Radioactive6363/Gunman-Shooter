@@ -8,7 +8,7 @@ public class DynamiteProjectile : MonoBehaviourPun
     [SerializeField] private float explosionDelay = 3f;
     [SerializeField] private float explosionRadius = 6f;
 
-    void Start()
+    private void Start()
     {
         if (PhotonNetwork.IsMasterClient)
         {
@@ -16,7 +16,7 @@ public class DynamiteProjectile : MonoBehaviourPun
         }
     }
 
-    IEnumerator ExplodeRoutine()
+    private IEnumerator ExplodeRoutine()
     {
         yield return new WaitForSeconds(explosionDelay);
         

@@ -7,25 +7,23 @@ using System.Collections;
 public class GameManager : MonoBehaviourPunCallbacks
 {
     public static GameManager Instance;
-
-    public enum GameState { WaitingForPlayers, Preparation, Duel, PostDuel }
     public GameState currentState;
 
     [Header("Scene Management")]
     public string[] duelScenes = { "DesertScene", "JungleScene", "CaveScene" };
-    private int currentSceneIndex = 0;
     
     [Header("Lobby Scenes")]
     public string lobbyRoomSceneName = "LobbyRoomScene"; 
     public string mainMenuSceneName = "MenuScene";
 
-    private int player1Wins = 0;
-    private int player2Wins = 0;
+    private int _currentSceneIndex;
+    private int _player1Wins;
+    private int _player2Wins;
     private const int WINS_NEEDED = 2;
 
     private GameObject localPlayerInstance;
 
-    void Awake()
+    private void Awake()
     {
         if (Instance == null) 
         {
@@ -35,11 +33,10 @@ public class GameManager : MonoBehaviourPunCallbacks
         else 
         {
             Destroy(gameObject);
-            return;
         }
     }
 
-    void Start()
+    private void Start()
     {
         if (SceneManager.GetActiveScene().name == lobbyRoomSceneName)
         {
@@ -48,7 +45,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
 
-    public void SetGameState(GameState newState)
+    private void SetGameState(GameState newState)
     {
         currentState = newState;
     }
@@ -61,7 +58,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
 
-    void CheckPlayers()
+    private void CheckPlayers()
     {
         if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount == 2)
         {
@@ -74,14 +71,14 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
 
-    void LoadNextDuelScene()
+    private void LoadNextDuelScene()
     {
         if (!PhotonNetwork.IsMasterClient) return;
         
-        if (currentSceneIndex < duelScenes.Length)
+        if (_currentSceneIndex < duelScenes.Length)
         {
-            PhotonNetwork.LoadLevel(duelScenes[currentSceneIndex]);
-            currentSceneIndex++;
+            PhotonNetwork.LoadLevel(duelScenes[_currentSceneIndex]);
+            _currentSceneIndex++;
         }
         else
         {
@@ -89,10 +86,10 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
     
-    void OnEnable() { SceneManager.sceneLoaded += OnSceneLoaded; }
-    void OnDisable() { SceneManager.sceneLoaded -= OnSceneLoaded; }
+    private void OnEnable() { SceneManager.sceneLoaded += OnSceneLoaded; }
+    private void OnDisable() { SceneManager.sceneLoaded -= OnSceneLoaded; }
 
-    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         if (scene.name != lobbyRoomSceneName && scene.name != mainMenuSceneName)
         {
@@ -102,7 +99,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
 
-    void SpawnPlayer()
+    private void SpawnPlayer()
     {
         Vector3 spawnPosition = new Vector3(Random.Range(-5f, 5f), 1f, Random.Range(-5f, 5f));
         localPlayerInstance = PhotonNetwork.Instantiate("PlayerPrefab", spawnPosition, Quaternion.identity);
@@ -114,14 +111,14 @@ public class GameManager : MonoBehaviourPunCallbacks
         
         SetGameState(GameState.PostDuel);
         
-        if (deadPlayerActorNr == 1) player2Wins++;
-        else player1Wins++;
+        if (deadPlayerActorNr == 1) _player2Wins++;
+        else _player1Wins++;
 
-        Log.Info($"Points - Player 1: {player1Wins} | Player 2: {player2Wins}");
+        Log.Info($"Points - Player 1: {_player1Wins} | Player 2: {_player2Wins}");
 
-        photonView.RPC("SyncScoreRPC", RpcTarget.All, player1Wins, player2Wins);
+        photonView.RPC("SyncScoreRPC", RpcTarget.All, _player1Wins, _player2Wins);
 
-        if (player1Wins >= WINS_NEEDED || player2Wins >= WINS_NEEDED)
+        if (_player1Wins >= WINS_NEEDED || _player2Wins >= WINS_NEEDED)
         {
             photonView.RPC("EndMatchRPC", RpcTarget.All);
         }
@@ -132,20 +129,20 @@ public class GameManager : MonoBehaviourPunCallbacks
     }
 
     [PunRPC]
-    void SyncScoreRPC(int p1Wins, int p2Wins)
+    private void SyncScoreRPC(int p1Wins, int p2Wins)
     {
-        player1Wins = p1Wins;
-        player2Wins = p2Wins;
+        _player1Wins = p1Wins;
+        _player2Wins = p2Wins;
     }
 
     [PunRPC]
-    void EndMatchRPC()
+    private void EndMatchRPC()
     {
         Log.Info("Returning to lobby.");
         StartCoroutine(ReturnToLobbyRoutine());
     }
 
-    IEnumerator ResetRoundRoutine()
+    private IEnumerator ResetRoundRoutine()
     {
         yield return new WaitForSeconds(3f);
         
@@ -155,13 +152,13 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
 
-    IEnumerator ReturnToLobbyRoutine()
+    private IEnumerator ReturnToLobbyRoutine()
     {
         yield return new WaitForSeconds(5f);
         
-        player1Wins = 0;
-        player2Wins = 0;
-        currentSceneIndex = 0;
+        _player1Wins = 0;
+        _player2Wins = 0;
+        _currentSceneIndex = 0;
         
         PhotonNetwork.LeaveRoom();
     }

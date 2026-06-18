@@ -6,7 +6,7 @@ public class PlayerShooting : MonoBehaviourPun
     public Transform cameraTransform;
     private IWeapon currentWeapon;
 
-    void Start()
+    private void Start()
     {
         currentWeapon = GetComponent<IWeapon>();
     }
@@ -16,11 +16,11 @@ public class PlayerShooting : MonoBehaviourPun
         currentWeapon = newWeapon;
     }
 
-    void Update()
+    private void Update()
     {
         if (!photonView.IsMine) return;
         
-        if (GameManager.Instance.currentState != GameManager.GameState.Duel) return;
+        if (GameManager.Instance.currentState != GameState.Duel) return;
 
         if (Input.GetMouseButtonDown(0) && currentWeapon != null) 
         {

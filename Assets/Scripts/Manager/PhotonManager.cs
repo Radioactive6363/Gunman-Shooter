@@ -67,7 +67,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     #endif
     }
     
-    void Start()
+    private void Start()
     {
         LatencyDebugging();
         PhotonNetwork.NickName = PlayerPrefs.GetString("PlayerName", "Default");

@@ -16,7 +16,7 @@ public class PlayerHealth : MonoBehaviourPun, IDamageable
         Die();
     }
 
-    void Die()
+    private void Die()
     {
         isDead = true;
         
