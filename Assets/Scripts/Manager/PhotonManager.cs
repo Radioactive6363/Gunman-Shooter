@@ -83,6 +83,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         Log.Info("Connected to Services");
         PhotonNetwork.JoinLobby();
     }
+    
     public override void OnJoinedLobby()
     {
         PhotonNetwork.AutomaticallySyncScene = true;
@@ -98,6 +99,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         }
         OnConnectedToMasterEvent?.Invoke(); 
     }
+    
     public override void OnDisconnected(DisconnectCause cause)
     {
         if (cause == DisconnectCause.DisconnectByClientLogic)
@@ -149,7 +151,6 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
         Log.Info($"Player {newPlayer.NickName} has joined the room");
-        GameManager.Instance.PlayerEnteredRoom();
     }
 
     public void CreateRoom(string roomName)

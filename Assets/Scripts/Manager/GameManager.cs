@@ -40,8 +40,8 @@ public class GameManager : MonoBehaviourPunCallbacks
     {
         currentState = newState;
     }
-    
-    public void PlayerEnteredRoom()
+
+    public override void OnPlayerEnteredRoom(Player newPlayer)
     {
         if (currentState == GameState.WaitingForPlayers)
         {
