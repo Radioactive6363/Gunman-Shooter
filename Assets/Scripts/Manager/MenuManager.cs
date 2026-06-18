@@ -37,18 +37,19 @@ public class MenuManager : MonoBehaviour
         LoadName();
         UpdateName();
 
-        menuScreen.SetActive(false);
-        joinRoomScreen.SetActive(false);
-        searchRoomScreen.SetActive(false);
-        createRoomScreen.SetActive(false);
-        loadingScreen.SetActive(false);
-        if (errorScreen != null) errorScreen.SetActive(false);
+        HideAllScreens();
 
         if (PhotonManager.ShowDisconnectErrorOnLoad)
         {
             Log.Info("[UI] Critical Network Error Received, Reinitializing UI.");
             PhotonManager.ShowDisconnectErrorOnLoad = false;
             ShowError(PhotonManager.LastDisconnectErrorMessage, ErrorContext.Disconnected);
+        }
+        else if (PhotonNetwork.InLobby || PhotonNetwork.IsConnectedAndReady)
+        {
+            Log.Info("[UI] Already connected, showing menu.");
+            firstLoad = false;
+            menuScreen.SetActive(true);
         }
         else
         {
