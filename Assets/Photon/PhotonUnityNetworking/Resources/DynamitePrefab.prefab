@@ -17,7 +17,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &3303684238143521168
 Transform:
   m_ObjectHideFlags: 0
@@ -202,7 +202,7 @@ MonoBehaviour:
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 0
-  explosionAreaIndicator: {fileID: 0}
+  explosionAreaIndicator: {fileID: 3303684238143521168}
 --- !u!54 &9210204125016682918
 Rigidbody:
   m_ObjectHideFlags: 0
