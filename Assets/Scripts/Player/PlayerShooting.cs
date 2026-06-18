@@ -20,7 +20,7 @@ public class PlayerShooting : MonoBehaviourPun
     {
         if (!photonView.IsMine) return;
         
-        if (GameManager.Instance.currentState != GameState.Duel) return;
+        if (GameManager.Instance == null || GameManager.Instance.currentState != GameState.Duel) return;
 
         if (Input.GetMouseButtonDown(0) && currentWeapon != null) 
         {
