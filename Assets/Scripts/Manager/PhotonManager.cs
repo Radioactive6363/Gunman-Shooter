@@ -149,6 +149,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
         Log.Info($"Player {newPlayer.NickName} has joined the room");
+        GameManager.Instance.PlayerEnteredRoom();
     }
 
     public void CreateRoom(string roomName)

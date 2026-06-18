@@ -1,8 +1,8 @@
-using UnityEngine;
+using System.Collections;
 using Photon.Pun;
 using Photon.Realtime;
+using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Collections;
 
 public class GameManager : MonoBehaviourPunCallbacks
 {
@@ -36,21 +36,12 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
 
-    private void Start()
-    {
-        if (SceneManager.GetActiveScene().name == lobbyRoomSceneName)
-        {
-            SetGameState(GameState.WaitingForPlayers);
-            CheckPlayers();
-        }
-    }
-
     private void SetGameState(GameState newState)
     {
         currentState = newState;
     }
     
-    public override void OnPlayerEnteredRoom(Player newPlayer)
+    public void PlayerEnteredRoom()
     {
         if (currentState == GameState.WaitingForPlayers)
         {
@@ -67,7 +58,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
         else
         {
-            Log.Info("(1/2 Players)");
+            Log.Info($"({PhotonNetwork.CurrentRoom.PlayerCount}/2 Players)");
         }
     }
 
@@ -91,11 +82,19 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        if (scene.name == lobbyRoomSceneName)
+        {
+            Initialize();
+        }
         if (scene.name != lobbyRoomSceneName && scene.name != mainMenuSceneName)
         {
             SpawnPlayer();
             SetGameState(GameState.Preparation);
             Log.Info($"Load Level: {scene.name}. Preparation.");
+            if (PhotonNetwork.IsMasterClient)
+            {
+                StartCoroutine(DuelState());
+            }
         }
     }
 
@@ -177,5 +176,28 @@ public class GameManager : MonoBehaviourPunCallbacks
     {
         Destroy(gameObject);
         SceneManager.LoadScene(mainMenuSceneName);
+    }
+
+    public void Initialize()
+    {
+        if (SceneManager.GetActiveScene().name == lobbyRoomSceneName)
+        {
+            SetGameState(GameState.WaitingForPlayers);
+            CheckPlayers();
+        }
+    }
+
+    private IEnumerator DuelState()
+    {
+        yield return new WaitForSeconds(5f);
+
+        photonView.RPC("DuelStateRPC", RpcTarget.All);
+    }
+
+    [PunRPC]
+    private void DuelStateRPC()
+    {
+        SetGameState(GameState.Duel);
+        Log.Info("DUEL!");
     }
 }
