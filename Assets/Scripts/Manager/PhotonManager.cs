@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.IO;
 using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Realtime;
@@ -14,6 +15,8 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     [SerializeField] private float outcomeLag;
     [SerializeField] private float incomeJitter;
     [SerializeField] private float outcomeJitter;
+    
+    private string _savePath => Path.Combine(Application.persistentDataPath, "player_profile.json");
     
     public static PhotonManager Instance;
     public static string LastDisconnectErrorMessage = "";
@@ -93,10 +96,40 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     private void Start()
     {
         LatencyDebugging();
-        PhotonNetwork.NickName = PlayerPrefs.GetString("PlayerName", "Default");
+        LoadPlayerData();
+        
         Log.Info($"Connecting as: {PhotonNetwork.NickName}");
         PhotonNetwork.ConnectUsingSettings();
         Log.Info("Loading");
+    }
+    
+    private void LoadPlayerData()
+    {
+        PlayerProfilePackage loadedData = JsonDataHandler.LoadJSON(_savePath);
+
+        if (loadedData != null)
+        {
+            PhotonNetwork.NickName = loadedData.nickname;
+            Log.Info($"Loaded profile for: {PhotonNetwork.NickName}");
+        }
+        else
+        {
+            string defaultName = PlayerPrefs.GetString("PlayerName", "Default");
+            PhotonNetwork.NickName = defaultName;
+            
+            SavePlayerData(defaultName, 0, false);
+        }
+    }
+    
+    public void SavePlayerData(string nickname, int avatarId, bool isReady)
+    {
+        PlayerProfilePackage newData = new PlayerProfilePackage(nickname, avatarId, isReady);
+        JsonDataHandler.SaveJSON(_savePath, newData);
+        
+        PhotonNetwork.NickName = nickname;
+        
+        PlayerPrefs.SetString("PlayerName", nickname);
+        PlayerPrefs.Save();
     }
 
     #region PhotonServices Logic

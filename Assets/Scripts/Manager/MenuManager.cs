@@ -26,7 +26,7 @@ public class MenuManager : MonoBehaviour
     private enum ErrorContext { None, Disconnected, RoomJoinFailed, RoomCreateFailed }
     private ErrorContext _currentErrorContext = ErrorContext.None;
 
-    private string playerName = "manaos";
+    private string playerName = "Default Name";
     private bool firstLoad = true;
 
     private void Start()
@@ -34,7 +34,9 @@ public class MenuManager : MonoBehaviour
         PhotonManager.Instance.OnConnectedToMasterEvent += OnFinishedLoading;
         PhotonManager.Instance.OnJoinRoomFailedEvent += OnJoinRoomError;
         PhotonManager.Instance.OnDisconnectedEvent += OnDisconnectedError;
-        playerName = PlayerPrefs.GetString("PlayerName", "manaos");
+        
+        playerName = PhotonNetwork.NickName;
+        
         UpdateName();
 
         HideAllScreens();
@@ -151,10 +153,17 @@ public class MenuManager : MonoBehaviour
     public void SetPlayerName()
     {
         string inputText = nameInputField.text;
+        
+        if (string.IsNullOrEmpty(inputText)) 
+        {
+            Log.Warning("Name cant be Empty");
+            return;
+        }
+
         playerName = inputText;
-        PlayerPrefs.SetString("PlayerName", inputText);
-        PlayerPrefs.Save();
-        PhotonNetwork.NickName = PlayerPrefs.GetString("PlayerName");
+        
+        PhotonManager.Instance.SavePlayerData(playerName, 0, false);
+        
         UpdateName();
     }
     
