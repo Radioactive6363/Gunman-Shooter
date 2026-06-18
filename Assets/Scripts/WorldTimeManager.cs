@@ -110,7 +110,7 @@ public class WorldTimeManager : MonoBehaviourPunCallbacks
         }
     }
 
-    void ApplyData(string cityName, DateTime cityTime)
+    private void ApplyData(string cityName, DateTime cityTime)
     {
         CurrentCityName = cityName;
         CurrentTime = cityTime;
@@ -121,16 +121,16 @@ public class WorldTimeManager : MonoBehaviourPunCallbacks
         UpdateSun();
     }
 
-    void UpdateSun()
+    private void UpdateSun()
     {
         float hour =
-        CurrentTime.Hour +
-        CurrentTime.Minute / 60f +
-        CurrentTime.Second / 3600f;
+            CurrentTime.Hour +
+            CurrentTime.Minute / 60f +
+            CurrentTime.Second / 3600f;
 
         float t = hour / 24f;
 
-        float sunAngle = Mathf.Lerp(-90f, 270f, t);
+        float sunAngle = (t * 360f) - 90f;
 
         Light sun = FindObjectOfType<Light>();
 
@@ -139,35 +139,39 @@ public class WorldTimeManager : MonoBehaviourPunCallbacks
             sun.transform.rotation =
                 Quaternion.Euler(sunAngle, 170f, 0f);
 
-            // Intensidad según altura del sol
             float sunHeight = Mathf.Sin(t * Mathf.PI * 2f);
 
-            sun.intensity = Mathf.Clamp01(sunHeight);
+            float sunIntensity = Mathf.SmoothStep(-0.2f, 1f, sunHeight);
+
+            float minLight = 0.12f;
+
+            sun.intensity = Mathf.Max(sunIntensity, minLight);
         }
 
         UpdateAmbientLighting(t);
     }
 
-    void UpdateAmbientLighting(float t)
+    private void UpdateAmbientLighting(float t)
     {
-        
         float dayFactor = Mathf.Sin(t * Mathf.PI * 2f);
+
+        dayFactor = Mathf.SmoothStep(-0.2f, 1f, dayFactor);
 
         dayFactor = Mathf.Clamp01(dayFactor);
 
         float nightFactor = 1f - dayFactor;
 
         Color dayColor = Color.white;
-        Color nightColor = new Color(0.05f, 0.05f, 0.15f);
+        Color nightColor = new Color(0.08f, 0.08f, 0.2f);
 
         RenderSettings.ambientLight =
             Color.Lerp(nightColor, dayColor, dayFactor);
 
         RenderSettings.ambientIntensity =
-            Mathf.Lerp(0.2f, 1f, dayFactor);
+            Mathf.Lerp(0.25f, 1f, dayFactor);
     }
 
-    void LoadExistingProperties()
+    private void LoadExistingProperties()
     {
         if (PhotonNetwork.CurrentRoom == null)
             return;
