@@ -209,7 +209,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: b0804f96d06ccc149bebd277c2403c5e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -316,6 +316,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerName: {fileID: 5449399185739327751}
+  aliveColor: {r: 0, g: 1, b: 0, a: 1}
+  deadColor: {r: 1, g: 0, b: 0, a: 1}
+  playerMeshRenderer: {fileID: 4354986429267612285}
 --- !u!114 &4354986429267612281
 MonoBehaviour:
   m_ObjectHideFlags: 0

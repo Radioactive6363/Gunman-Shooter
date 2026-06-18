@@ -6,6 +6,9 @@ public class PlayerHealth : MonoBehaviourPun, IDamageable
     private bool isDead = false;
     private PlayerController _controller;
     private PlayerShooting _shooting;
+    
+    public event Action OnDeath;
+    public static event Action OnLocalDeath;
 
     private void Awake()
     {
@@ -31,6 +34,13 @@ public class PlayerHealth : MonoBehaviourPun, IDamageable
     
         _controller.enabled = false;
         _shooting.enabled = false;
+    
+        OnDeath?.Invoke();
+        
+        if (photonView.IsMine)
+        {
+            OnLocalDeath?.Invoke();
+        }
     
         Log.Info($"Player {photonView.Owner.NickName} has died.");
     

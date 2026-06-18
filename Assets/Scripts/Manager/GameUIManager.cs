@@ -2,7 +2,7 @@ using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
-using Photon.Pun;
+using UnityEngine.UI;
 
 public class GameUIManager : MonoBehaviour
 {
@@ -10,6 +10,8 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI stateInfoText;
     [SerializeField] private TextMeshProUGUI countdownText;
     [SerializeField] private TextMeshProUGUI SVeventTxt;
+    [SerializeField] private TextMeshProUGUI weaponNameText;
+    [SerializeField] private Image deathOverlayImage;
 
     private Coroutine _phaseCoroutine;
     private Coroutine _serverMessageCoroutine;
@@ -26,6 +28,7 @@ public class GameUIManager : MonoBehaviour
         GameManager.OnMatchWinnerDeclared += HandleMatchWinner;
         
         GameManager.OnMatchCancelled += HandleMatchCancelled;
+        PlayerHealth.OnLocalDeath += HandleLocalDeath;
     }
 
     private void OnDisable()
@@ -39,7 +42,8 @@ public class GameUIManager : MonoBehaviour
         GameManager.OnRoundWinnerDeclared -= HandleRoundWinner;
         GameManager.OnMatchWinnerDeclared -= HandleMatchWinner;
         
-        GameManager.OnMatchCancelled        -= HandleMatchCancelled;
+        GameManager.OnMatchCancelled -= HandleMatchCancelled;
+        PlayerHealth.OnLocalDeath -= HandleLocalDeath;
     }
 
     private void Awake()
@@ -48,15 +52,25 @@ public class GameUIManager : MonoBehaviour
         if (stateInfoText != null)  stateInfoText.text  = "Loading...";
         if (SVeventTxt != null)     SVeventTxt.text     = "";
     }
+    
+    private void Start()
+    {
+        UpdateWeaponNameUI();
+    }
 
     private void HandleGameStateChanged(GameState newState)
     {
+        if (newState == GameState.Preparation || newState == GameState.Duel)
+        {
+            if (deathOverlayImage != null) deathOverlayImage.gameObject.SetActive(false);
+        }
+        
         if (newState == GameState.Duel)
         {
             if (countdownText != null) countdownText.text = "";
-            
             if (gameObject.activeInHierarchy) StartCoroutine(ClearDrawTextRoutine());
         }
+        
         else if (newState == GameState.WaitingForPlayers)
         {
             if (stateInfoText != null) 
@@ -160,6 +174,22 @@ public class GameUIManager : MonoBehaviour
         }
     }
     
+    private void UpdateWeaponNameUI()
+    {
+        if (weaponNameText == null) return;
+        
+        LevelWeaponConfig levelConfig = FindObjectOfType<LevelWeaponConfig>();
+        
+        if (levelConfig != null)
+        {
+            weaponNameText.text = $"Current Weapon: {levelConfig.allowedWeapon.ToString()}";
+        }
+        else
+        {
+            weaponNameText.text = "";
+        }
+    }
+    
     private void HandleMatchCancelled()
     {
         if (stateInfoText != null) 
@@ -170,4 +200,13 @@ public class GameUIManager : MonoBehaviour
         
         if (countdownText != null) countdownText.text = "";
     }
+    
+    private void HandleLocalDeath()
+    {
+        if (deathOverlayImage != null)
+        {
+            deathOverlayImage.gameObject.SetActive(true);
+        }
+    }
+    
 }
