@@ -151,7 +151,7 @@ MonoBehaviour:
   stateInfoText: {fileID: 1227660512852995934}
   countdownText: {fileID: 6532741072220529893}
   endMatchPanel: {fileID: 0}
-  winnerText: {fileID: 0}
+  winnerText: {fileID: 2335514589697955291}
 --- !u!1 &2528857297529622904
 GameObject:
   m_ObjectHideFlags: 0

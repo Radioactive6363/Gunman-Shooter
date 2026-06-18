@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class DuelMovementRestrictor : MonoBehaviour
+public class DuelRestrictor : MonoBehaviour
 {
     public static DuelState CurrentState { get; private set; } = DuelState.Free;
  

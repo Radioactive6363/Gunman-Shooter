@@ -5,12 +5,13 @@ using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviourPunCallbacks
 {
     public static GameManager Instance;
     public static event Action<GameState> OnGameStateChanged;
+    public static event Action<int> OnDuelCountdownStarted;
+    public static event Action<int> OnLobbyCountdownTick;
     
     [Header("Timer Settings")]
     [SerializeField] private int timeTillDuel = 3;
@@ -35,7 +36,21 @@ public class GameManager : MonoBehaviourPunCallbacks
     private GameObject _localPlayerInstance;
     public  GameObject LocalPlayer => _localPlayerInstance;
     
-    public int TimeTillDuel { get => timeTillDuel; set => timeTillDuel = value; }
+    public int TimeTillDuel => timeTillDuel;
+    
+    public void SetDuelStartDelay(float seconds)
+    {
+        timeTillDuel = Mathf.CeilToInt(seconds);
+        Log.Info($"[GameManager] timeTillDuel sync: {timeTillDuel}s");
+    }
+    
+    public void StartDuelCountdown()
+    {
+        OnDuelCountdownStarted?.Invoke(timeTillDuel);
+        
+        if (PhotonNetwork.IsMasterClient)
+            StartCoroutine(DuelState());
+    }
 
     private void Awake()
     {
@@ -145,40 +160,69 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
     
+    [SerializeField] private int lobbyCountdownSeconds = 5;
+    private Coroutine _lobbyCountdownCoroutine;
+
     private void CheckAllPlayersReady()
     {
         if (!PhotonNetwork.IsMasterClient) return;
 
         int playerCount = PhotonNetwork.CurrentRoom.PlayerCount;
-        int readyCount = 0;
+        int readyCount  = 0;
         
         foreach (Player p in PhotonNetwork.PlayerList)
         {
             if (p.CustomProperties.TryGetValue(READY_PROP_KEY, out object isReady) && (bool)isReady)
-            {
                 readyCount++;
-            }
         }
 
         Log.Info($"Players Ready: {readyCount}/{playerCount}");
-        
-        bool canStart = false;
 
-        if (playerCount == 1)
-        {
-            canStart = (readyCount == 1); 
-        }
-        else
-        {
-            canStart = (readyCount == playerCount);
-        }
+        bool canStart = playerCount == 1 ? readyCount == 1 : readyCount == playerCount;
 
         if (canStart)
         {
-            Log.Info("Everyone Ready");
-            SetGameState(GameState.Preparation); 
-            StartCoroutine(WaitAndLoadDuelScene(2f));
+            Log.Info("Everyone Ready - Starting lobby countdown");
+            photonView.RPC("SetPreparationStateRPC", RpcTarget.All);
+
+            if (_lobbyCountdownCoroutine != null) StopCoroutine(_lobbyCountdownCoroutine);
+            _lobbyCountdownCoroutine = StartCoroutine(LobbyCountdownCoroutine());
         }
+        else if (_lobbyCountdownCoroutine != null)
+        {
+            StopCoroutine(_lobbyCountdownCoroutine);
+            _lobbyCountdownCoroutine = null;
+            
+            Log.Info("Lobby countdown cancelled - player unreadied");
+            photonView.RPC("CancelLobbyCountdownRPC", RpcTarget.All);
+        }
+    }
+
+    [PunRPC]
+    private void SetPreparationStateRPC() => SetGameState(GameState.Preparation);
+
+    [PunRPC]
+    private void SetWaitingStateRPC() => SetGameState(GameState.WaitingForPlayers);
+
+    [PunRPC]
+    private void CancelLobbyCountdownRPC()
+    {
+        SetGameState(GameState.WaitingForPlayers);
+        OnLobbyCountdownTick?.Invoke(-1);
+    }
+
+    private IEnumerator LobbyCountdownCoroutine()
+    {
+        int remaining = lobbyCountdownSeconds;
+        while (remaining > 0)
+        {
+            OnLobbyCountdownTick?.Invoke(remaining);
+            yield return new WaitForSeconds(1f);
+            remaining--;
+        }
+        OnLobbyCountdownTick?.Invoke(0);
+        _lobbyCountdownCoroutine = null;
+        LoadNextDuelScene();
     }
     
     private void ResetReadyState()
@@ -202,21 +246,23 @@ public class GameManager : MonoBehaviourPunCallbacks
         Cursor.visible = false;
         
         Log.Info($"Load Level: {sceneName}. Preparation.");
-    
-        if (PhotonNetwork.IsMasterClient)
-            StartCoroutine(DuelState());
     }
     
-    private IEnumerator WaitAndLoadDuelScene(float waitTime)
-    {
-        yield return new WaitForSeconds(waitTime);
-        LoadNextDuelScene();
-    }
 
     private void SpawnPlayer()
     {
-        Vector3 spawnPosition = new Vector3(Random.Range(-5f, 5f), 1f, Random.Range(-5f, 5f));
+        Vector3 spawnPosition = new Vector3(0, 1f, 0);
         _localPlayerInstance = PhotonNetwork.Instantiate("PlayerPrefab", spawnPosition, Quaternion.identity);
+        SetLocalPlayerName();
+    }
+
+    private void SetLocalPlayerName()
+    {
+        var label = _localPlayerInstance.GetComponentInChildren<TMPro.TextMeshPro>();
+        if (label != null)
+            label.text = PhotonNetwork.LocalPlayer.NickName;
+        else
+            Log.Warning("[GameManager] No TextMeshPro name label found on PlayerPrefab.");
     }
 
     private void LoadNextDuelScene()

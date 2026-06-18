@@ -14,28 +14,28 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private GameObject endMatchPanel;
     [SerializeField] private TextMeshProUGUI winnerText;
 
-    private int _gameStartTimer;
+    private Coroutine _countdownCoroutine;
 
     private void OnEnable()
     {
-        GameManager.OnGameStateChanged += HandleGameStateChanged;
+        GameManager.OnGameStateChanged      += HandleGameStateChanged;
+        GameManager.OnDuelCountdownStarted  += HandleCountdownStarted;
+        GameManager.OnLobbyCountdownTick     += HandleLobbyCountdownTick;
     }
 
     private void OnDisable()
     {
-        GameManager.OnGameStateChanged -= HandleGameStateChanged;
+        GameManager.OnGameStateChanged      -= HandleGameStateChanged;
+        GameManager.OnDuelCountdownStarted  -= HandleCountdownStarted;
+        GameManager.OnLobbyCountdownTick     -= HandleLobbyCountdownTick;
     }
 
     private void Start()
     {
-        if (GameManager.Instance != null)
-        {
-            _gameStartTimer = GameManager.Instance.TimeTillDuel;
-        }
-        if (countdownText != null) countdownText.text = "";
-        if (endMatchPanel != null) endMatchPanel.SetActive(false);
-        if (stateInfoText != null) stateInfoText.text = "Waiting Player...";
-        if (winnerText != null) winnerText.text = "";
+        if (countdownText != null)  countdownText.text  = "";
+        if (endMatchPanel != null)  endMatchPanel.SetActive(false);
+        if (stateInfoText != null)  stateInfoText.text  = "Waiting Player...";
+        if (winnerText != null)     winnerText.text     = "";
     }
 
     private void HandleGameStateChanged(GameState newState)
@@ -49,7 +49,6 @@ public class GameUIManager : MonoBehaviour
 
             case GameState.Preparation:
                 if (stateInfoText != null) stateInfoText.text = "¡Ready for Duel!";
-                StartCoroutine(CountDownCoroutine(_gameStartTimer));
                 break;
 
             case GameState.Duel:
@@ -67,6 +66,13 @@ public class GameUIManager : MonoBehaviour
                 break;
         }
     }
+    
+    private void HandleCountdownStarted(int duration)
+    {
+        if (_countdownCoroutine != null)
+            StopCoroutine(_countdownCoroutine);
+        _countdownCoroutine = StartCoroutine(CountDownCoroutine(duration));
+    }
 
     private IEnumerator CountDownCoroutine(int duration)
     {
@@ -83,6 +89,23 @@ public class GameUIManager : MonoBehaviour
             countdownText.text = "¡GO!";
             yield return new WaitForSeconds(0.8f);
             countdownText.text = "";
+        }
+        _countdownCoroutine = null;
+    }
+    
+    private void HandleLobbyCountdownTick(int remaining)
+    {
+        if (remaining == -1)
+        {
+            if (countdownText != null) countdownText.text = "";
+        }
+        else if (remaining == 0)
+        {
+            if (countdownText != null) countdownText.text = "¡GO!";
+        }
+        else
+        {
+            if (countdownText != null) countdownText.text = remaining.ToString();
         }
     }
 

@@ -74,12 +74,12 @@ public class PlayerController : MonoBehaviourPun
 
     private void HandleMovement()
     {
-        if (!DuelMovementRestrictor.CanMove()) return;
+        if (!DuelRestrictor.CanMove()) return;
 
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
 
-        if (!DuelMovementRestrictor.CanMoveBackward())
+        if (!DuelRestrictor.CanMoveBackward())
             z = Mathf.Max(0f, z);
 
         Vector3 move = transform.right * x + transform.forward * z;
@@ -88,7 +88,7 @@ public class PlayerController : MonoBehaviourPun
 
     private void HandleLook()
     {
-        if (!DuelMovementRestrictor.CanRotateCamera()) return;
+        if (!DuelRestrictor.CanRotateCamera()) return;
 
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
