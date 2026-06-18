@@ -94,16 +94,23 @@ public class GameManager : MonoBehaviourPunCallbacks
         if (scene.name == lobbyRoomSceneName)
         {
             Initialize();
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
         }
-        if (scene.name != lobbyRoomSceneName && scene.name != mainMenuSceneName)
+        else if (scene.name == mainMenuSceneName)
+        {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+        else // duel scenes
         {
             SpawnPlayer();
             SetGameState(GameState.Preparation);
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
             Log.Info($"Load Level: {scene.name}. Preparation.");
             if (PhotonNetwork.IsMasterClient)
-            {
                 StartCoroutine(DuelState());
-            }
         }
     }
 
