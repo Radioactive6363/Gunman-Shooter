@@ -64,9 +64,9 @@ public class GameManager : MonoBehaviourPunCallbacks
     {
         if (scene.name == lobbyRoomSceneName)
         {
-            Initialize();
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+            Initialize();
         }
         else if (scene.name == mainMenuSceneName)
         {
@@ -75,14 +75,23 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
         else
         {
-            SpawnPlayer();
-            SetGameState(GameState.Preparation);
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-            Log.Info($"Load Level: {scene.name}. Preparation.");
-            if (PhotonNetwork.IsMasterClient)
-                StartCoroutine(DuelState());
+            StartCoroutine(SpawnWhenReady(scene.name));
         }
+    }
+    
+    private IEnumerator SpawnWhenReady(string sceneName)
+    {
+        while (Instance == null || !photonView.IsMine && !photonView.IsOwnerActive)
+            yield return null;
+
+        SpawnPlayer();
+        SetGameState(GameState.Preparation);
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        Log.Info($"Load Level: {sceneName}. Preparation.");
+    
+        if (PhotonNetwork.IsMasterClient)
+            StartCoroutine(DuelState());
     }
 
     public override void OnPlayerEnteredRoom(Player newPlayer)
