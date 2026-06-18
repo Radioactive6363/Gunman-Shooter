@@ -42,7 +42,7 @@ public class GameUIManager : MonoBehaviour
         GameManager.OnMatchCancelled        -= HandleMatchCancelled;
     }
 
-    private void Start()
+    private void Awake()
     {
         if (countdownText != null)  countdownText.text  = "";
         if (stateInfoText != null)  stateInfoText.text  = "Loading...";
