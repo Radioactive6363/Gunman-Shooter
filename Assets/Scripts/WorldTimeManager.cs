@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Globalization;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -75,12 +76,10 @@ public class WorldTimeManager : MonoBehaviourPunCallbacks
         CityData city =
             cities[UnityEngine.Random.Range(0, cities.Length)];
 
-        string url =
-            $"https://api.open-meteo.com/v1/forecast" +
-            $"?latitude={city.latitude}" +
-            $"&longitude={city.longitude}" +
-            $"&current=temperature_2m" +
-            $"&timezone=auto";
+        string url = string.Format(CultureInfo.InvariantCulture,
+            "https://api.open-meteo.com/v1/forecast?latitude={0}&longitude={1}&current=temperature_2m&timezone=auto",
+            city.latitude, 
+            city.longitude);
 
         using (UnityWebRequest request = UnityWebRequest.Get(url))
         {
