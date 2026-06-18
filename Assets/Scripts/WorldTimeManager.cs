@@ -124,20 +124,47 @@ public class WorldTimeManager : MonoBehaviourPunCallbacks
     void UpdateSun()
     {
         float hour =
-            CurrentTime.Hour +
-            CurrentTime.Minute / 60f +
-            CurrentTime.Second / 3600f;
+        CurrentTime.Hour +
+        CurrentTime.Minute / 60f +
+        CurrentTime.Second / 3600f;
 
-        float sunAngle =
-            (hour / 24f) * 360f - 90f;
+        float t = hour / 24f;
 
-        Debug.Log($"Sun Angle: {sunAngle}");
+        float sunAngle = Mathf.Lerp(-90f, 270f, t);
 
         Light sun = FindObjectOfType<Light>();
-        if ( sun != null)
+
+        if (sun != null)
         {
-            sun.transform.rotation = Quaternion.Euler(sunAngle, 170f, 0f);
+            sun.transform.rotation =
+                Quaternion.Euler(sunAngle, 170f, 0f);
+
+            // Intensidad según altura del sol
+            float sunHeight = Mathf.Sin(t * Mathf.PI * 2f);
+
+            sun.intensity = Mathf.Clamp01(sunHeight);
         }
+
+        UpdateAmbientLighting(t);
+    }
+
+    void UpdateAmbientLighting(float t)
+    {
+        
+        float dayFactor = Mathf.Sin(t * Mathf.PI * 2f);
+
+        dayFactor = Mathf.Clamp01(dayFactor);
+
+        float nightFactor = 1f - dayFactor;
+
+        Color dayColor = Color.white;
+        Color nightColor = new Color(0.05f, 0.05f, 0.15f);
+
+        RenderSettings.ambientLight =
+            Color.Lerp(nightColor, dayColor, dayFactor);
+
+        RenderSettings.ambientIntensity =
+            Mathf.Lerp(0.2f, 1f, dayFactor);
     }
 
     void LoadExistingProperties()
