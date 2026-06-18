@@ -60,13 +60,13 @@ public class WorldTimeManager : MonoBehaviourPunCallbacks
     private void Awake()
     {
         Instance = this;
-    }
-
-    public override void OnCreatedRoom()
-    {
         if (PhotonNetwork.IsMasterClient)
         {
             StartCoroutine(GetRandomCityTime());
+        }
+        else
+        {
+            LoadExistingProperties();
         }
     }
 
@@ -157,11 +157,6 @@ public class WorldTimeManager : MonoBehaviourPunCallbacks
             DateTime.Parse(timeString);
 
         ApplyData(city, time);
-    }
-
-    public override void OnJoinedRoom()
-    {
-        LoadExistingProperties();
     }
 
     public override void OnRoomPropertiesUpdate(
