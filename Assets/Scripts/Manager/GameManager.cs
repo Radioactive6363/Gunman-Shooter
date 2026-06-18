@@ -9,6 +9,9 @@ public class GameManager : MonoBehaviourPunCallbacks
 {
     public static GameManager Instance;
     public GameState currentState;
+    
+    [Header("Timer Settings")]
+    [SerializeField] private float timeTillDuel = 0.5f;
 
     [Header("Scene Management")]
     public string[] duelScenes = { "DesertScene", "JungleScene", "CaveScene" };
@@ -20,62 +23,19 @@ public class GameManager : MonoBehaviourPunCallbacks
     private int _currentSceneIndex;
     private Dictionary<int, int> _playerWins = new Dictionary<int, int>();
     private const int WINS_NEEDED = 2;
-
     private GameObject localPlayerInstance;
 
     private void Awake()
     {
-        if (Instance == null) 
-        {
+        if (Instance == null)
             Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else 
-        {
+        else
             Destroy(gameObject);
-        }
     }
 
     private void SetGameState(GameState newState)
     {
         currentState = newState;
-    }
-
-    public override void OnPlayerEnteredRoom(Player newPlayer)
-    {
-        if (currentState == GameState.WaitingForPlayers)
-        {
-            CheckPlayers();
-        }
-    }
-
-    private void CheckPlayers()
-    {
-        int needed = PhotonNetwork.CurrentRoom.MaxPlayers;
-        if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount == needed)
-        {
-            Log.Info("All Players Connected.");
-            LoadNextDuelScene();
-        }
-        else
-        {
-            Log.Info($"({PhotonNetwork.CurrentRoom.PlayerCount}/{needed} Players)");
-        }
-    }
-
-    private void LoadNextDuelScene()
-    {
-        if (!PhotonNetwork.IsMasterClient) return;
-        
-        if (_currentSceneIndex < duelScenes.Length)
-        {
-            PhotonNetwork.LoadLevel(duelScenes[_currentSceneIndex]);
-            _currentSceneIndex++;
-        }
-        else
-        {
-            PhotonNetwork.LoadLevel(duelScenes[0]); 
-        }
     }
 
     public override void OnEnable()
@@ -102,7 +62,6 @@ public class GameManager : MonoBehaviourPunCallbacks
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
-            Destroy(gameObject);
         }
         else // duel scenes
         {
@@ -116,18 +75,76 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
     }
 
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        if (currentState == GameState.WaitingForPlayers)
+            CheckPlayers();
+    }
+
+    private void CheckPlayers()
+    {
+        int needed = PhotonNetwork.CurrentRoom.MaxPlayers;
+        if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount == needed)
+        {
+            Log.Info("All Players Connected.");
+            LoadNextDuelScene();
+        }
+        else
+        {
+            Log.Info($"({PhotonNetwork.CurrentRoom.PlayerCount}/{needed} Players)");
+        }
+    }
+
     private void SpawnPlayer()
     {
         Vector3 spawnPosition = new Vector3(Random.Range(-5f, 5f), 1f, Random.Range(-5f, 5f));
         localPlayerInstance = PhotonNetwork.Instantiate("PlayerPrefab", spawnPosition, Quaternion.identity);
     }
+
+    private void LoadNextDuelScene()
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        if (_currentSceneIndex < duelScenes.Length)
+        {
+            PhotonNetwork.LoadLevel(duelScenes[_currentSceneIndex]);
+            _currentSceneIndex++;
+        }
+        else
+        {
+            PhotonNetwork.LoadLevel(duelScenes[0]);
+        }
+    }
+
+    private void Initialize()
+    {
+        if (SceneManager.GetActiveScene().name == lobbyRoomSceneName)
+        {
+            SetGameState(GameState.WaitingForPlayers);
+            CheckPlayers();
+        }
+    }
+
+    private IEnumerator DuelState()
+    {
+        yield return new WaitForSeconds(timeTillDuel);
+        photonView.RPC("DuelStateRPC", RpcTarget.All);
+    }
+
+    [PunRPC]
+    private void DuelStateRPC()
+    {
+        SetGameState(GameState.Duel);
+        Log.Info("DUEL!");
+    }
     
+
     public void RegisterKill(int deadPlayerActorNr)
     {
         if (currentState != GameState.Duel) return;
 
         SetGameState(GameState.PostDuel);
-        
+
         foreach (Player player in PhotonNetwork.PlayerList)
         {
             if (player.ActorNumber != deadPlayerActorNr)
@@ -137,7 +154,7 @@ public class GameManager : MonoBehaviourPunCallbacks
                 _playerWins[player.ActorNumber]++;
             }
         }
-        
+
         int[] actorNrs = new int[_playerWins.Count];
         int[] wins = new int[_playerWins.Count];
         int i = 0;
@@ -162,22 +179,19 @@ public class GameManager : MonoBehaviourPunCallbacks
         for (int i = 0; i < actorNrs.Length; i++)
             _playerWins[actorNrs[i]] = wins[i];
     }
-    
-    [PunRPC]
-    private void EndMatchRPC()
-    {
-        Log.Info("Returning to lobby.");
-        StartCoroutine(ReturnToLobbyRoutine());
-    }
 
     private IEnumerator ResetRoundRoutine()
     {
         yield return new WaitForSeconds(3f);
-        
         if (PhotonNetwork.IsMasterClient)
-        {
             LoadNextDuelScene();
-        }
+    }
+    
+    [PunRPC]
+    private void EndMatchRPC()
+    {
+        Log.Info("Match ended, returning to lobby.");
+        StartCoroutine(ReturnToLobbyRoutine());
     }
 
     private IEnumerator ReturnToLobbyRoutine()
@@ -186,45 +200,18 @@ public class GameManager : MonoBehaviourPunCallbacks
         _playerWins.Clear();
         _currentSceneIndex = 0;
         if (PhotonNetwork.IsMasterClient)
-        {
             PhotonNetwork.LoadLevel(lobbyRoomSceneName);
-        }
     }
 
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
         Log.Info($"Player {otherPlayer.NickName} disconnected.");
         if (PhotonNetwork.CurrentRoom.PlayerCount < 2)
-        {
             PhotonNetwork.LeaveRoom();
-        }
     }
 
     public override void OnLeftRoom()
     {
         SceneManager.LoadScene(mainMenuSceneName);
-    }
-    
-    private void Initialize()
-    {
-        if (SceneManager.GetActiveScene().name == lobbyRoomSceneName)
-        {
-            SetGameState(GameState.WaitingForPlayers);
-            CheckPlayers();
-        }
-    }
-
-    private IEnumerator DuelState()
-    {
-        yield return new WaitForSeconds(5f);
-
-        photonView.RPC("DuelStateRPC", RpcTarget.All);
-    }
-
-    [PunRPC]
-    private void DuelStateRPC()
-    {
-        SetGameState(GameState.Duel);
-        Log.Info("DUEL!");
     }
 }

@@ -140,7 +140,8 @@ public class PhotonManager : MonoBehaviourPunCallbacks
             
             if (PhotonNetwork.IsMasterClient)
             {
-                PhotonNetwork.LoadLevel("LobbyRoomScene"); 
+                PhotonNetwork.InstantiateRoomObject("GameManager", Vector3.zero, Quaternion.identity);
+                PhotonNetwork.LoadLevel("LobbyRoomScene");
             }
             
             Log.Info("Lobby Room Scene Loaded");
