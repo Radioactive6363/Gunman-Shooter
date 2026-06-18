@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
@@ -17,8 +18,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     public string mainMenuSceneName = "MenuScene";
 
     private int _currentSceneIndex;
-    private int _player1Wins;
-    private int _player2Wins;
+    private Dictionary<int, int> _playerWins = new Dictionary<int, int>();
     private const int WINS_NEEDED = 2;
 
     private GameObject localPlayerInstance;
@@ -51,14 +51,15 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     private void CheckPlayers()
     {
-        if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount == 2)
+        int needed = PhotonNetwork.CurrentRoom.MaxPlayers;
+        if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount == needed)
         {
-            Log.Info("Both Players Connected.");
+            Log.Info("All Players Connected.");
             LoadNextDuelScene();
         }
         else
         {
-            Log.Info($"({PhotonNetwork.CurrentRoom.PlayerCount}/2 Players)");
+            Log.Info($"({PhotonNetwork.CurrentRoom.PlayerCount}/{needed} Players)");
         }
     }
 
@@ -123,33 +124,44 @@ public class GameManager : MonoBehaviourPunCallbacks
     public void RegisterKill(int deadPlayerActorNr)
     {
         if (currentState != GameState.Duel) return;
-        
+
         SetGameState(GameState.PostDuel);
         
-        if (deadPlayerActorNr == 1) _player2Wins++;
-        else _player1Wins++;
-
-        Log.Info($"Points - Player 1: {_player1Wins} | Player 2: {_player2Wins}");
-
-        photonView.RPC("SyncScoreRPC", RpcTarget.All, _player1Wins, _player2Wins);
-
-        if (_player1Wins >= WINS_NEEDED || _player2Wins >= WINS_NEEDED)
+        foreach (Player player in PhotonNetwork.PlayerList)
         {
+            if (player.ActorNumber != deadPlayerActorNr)
+            {
+                if (!_playerWins.ContainsKey(player.ActorNumber))
+                    _playerWins[player.ActorNumber] = 0;
+                _playerWins[player.ActorNumber]++;
+            }
+        }
+        
+        int[] actorNrs = new int[_playerWins.Count];
+        int[] wins = new int[_playerWins.Count];
+        int i = 0;
+        foreach (var kvp in _playerWins) { actorNrs[i] = kvp.Key; wins[i] = kvp.Value; i++; }
+
+        photonView.RPC("SyncScoreRPC", RpcTarget.All, actorNrs, wins);
+
+        int winner = -1;
+        foreach (var kvp in _playerWins)
+            if (kvp.Value >= WINS_NEEDED) { winner = kvp.Key; break; }
+
+        if (winner != -1)
             photonView.RPC("EndMatchRPC", RpcTarget.MasterClient);
-        }
         else
-        {
             StartCoroutine(ResetRoundRoutine());
-        }
     }
 
     [PunRPC]
-    private void SyncScoreRPC(int p1Wins, int p2Wins)
+    private void SyncScoreRPC(int[] actorNrs, int[] wins)
     {
-        _player1Wins = p1Wins;
-        _player2Wins = p2Wins;
+        _playerWins.Clear();
+        for (int i = 0; i < actorNrs.Length; i++)
+            _playerWins[actorNrs[i]] = wins[i];
     }
-//ShowEndMatchResults
+    
     [PunRPC]
     private void EndMatchRPC()
     {
@@ -170,15 +182,10 @@ public class GameManager : MonoBehaviourPunCallbacks
     private IEnumerator ReturnToLobbyRoutine()
     {
         yield return new WaitForSeconds(5f);
-        
-        _player1Wins = 0;
-        _player2Wins = 0;
+        _playerWins.Clear();
         _currentSceneIndex = 0;
-        
         if (PhotonNetwork.IsMasterClient)
-        {
             PhotonNetwork.LeaveRoom();
-        }
     }
     
 
