@@ -13,7 +13,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     public static event Action<GameState> OnGameStateChanged;
     
     [Header("Timer Settings")]
-    [SerializeField] private float timeTillDuel = 0.5f;
+    [SerializeField] private int timeTillDuel = 3;
 
     [Header("Scene Management")]
     [SerializeField] private string[] duelScenes = { "DesertScene", "JungleScene", "CaveScene" };
@@ -32,7 +32,10 @@ public class GameManager : MonoBehaviourPunCallbacks
     private const int WINS_NEEDED = 2;
     private const string READY_PROP_KEY = "IsReady";
     
-    private GameObject localPlayerInstance;
+    private GameObject _localPlayerInstance;
+    public  GameObject LocalPlayer => _localPlayerInstance;
+    
+    public int TimeTillDuel { get => timeTillDuel; set => timeTillDuel = value; }
 
     private void Awake()
     {
@@ -213,7 +216,7 @@ public class GameManager : MonoBehaviourPunCallbacks
     private void SpawnPlayer()
     {
         Vector3 spawnPosition = new Vector3(Random.Range(-5f, 5f), 1f, Random.Range(-5f, 5f));
-        localPlayerInstance = PhotonNetwork.Instantiate("PlayerPrefab", spawnPosition, Quaternion.identity);
+        _localPlayerInstance = PhotonNetwork.Instantiate("PlayerPrefab", spawnPosition, Quaternion.identity);
     }
 
     private void LoadNextDuelScene()

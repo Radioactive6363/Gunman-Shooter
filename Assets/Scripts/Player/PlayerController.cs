@@ -19,14 +19,12 @@ public class PlayerController : MonoBehaviourPun
     [SerializeField] private float baseFOV = 60f;
     [SerializeField] private float aimFOV = 40f;
     
-    
     private float originalSpeed;
     
     private float xRotation = 0f;
     
     private void OnEnable()
     {
-        // Renombramos el método para que tenga más sentido
         PlayerShooting.OnWeaponChargeChanged += HandleChargeEffects;
     }
 
@@ -76,8 +74,13 @@ public class PlayerController : MonoBehaviourPun
 
     private void HandleMovement()
     {
+        if (!DuelMovementRestrictor.CanMove()) return;
+
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
+
+        if (!DuelMovementRestrictor.CanMoveBackward())
+            z = Mathf.Max(0f, z);
 
         Vector3 move = transform.right * x + transform.forward * z;
         transform.position += move * speed * Time.deltaTime;
@@ -85,6 +88,8 @@ public class PlayerController : MonoBehaviourPun
 
     private void HandleLook()
     {
+        if (!DuelMovementRestrictor.CanRotateCamera()) return;
+
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 

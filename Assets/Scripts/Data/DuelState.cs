@@ -1,0 +1,1 @@
+public enum DuelState { FullLock, WalkOnly, Free }

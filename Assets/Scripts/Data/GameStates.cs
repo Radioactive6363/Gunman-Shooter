@@ -3,5 +3,6 @@ public enum GameState
     WaitingForPlayers,
     Preparation,
     Duel, 
-    PostDuel
+    PostDuel,
+    MatchOver,
 }
