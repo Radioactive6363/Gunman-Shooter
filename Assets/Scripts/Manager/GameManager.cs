@@ -102,6 +102,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+            Destroy(gameObject);
         }
         else // duel scenes
         {
@@ -197,17 +198,16 @@ public class GameManager : MonoBehaviourPunCallbacks
         if (PhotonNetwork.CurrentRoom.PlayerCount < 2)
         {
             SceneManager.LoadScene(mainMenuSceneName);
-            Destroy(gameObject);
+
         }
     }
 
     public override void OnLeftRoom()
     {
         SceneManager.LoadScene(mainMenuSceneName);
-        Destroy(gameObject);
     }
 
-    public void Initialize()
+    private void Initialize()
     {
         if (SceneManager.GetActiveScene().name == lobbyRoomSceneName)
         {
