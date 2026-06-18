@@ -185,9 +185,11 @@ public class GameManager : MonoBehaviourPunCallbacks
         _playerWins.Clear();
         _currentSceneIndex = 0;
         if (PhotonNetwork.IsMasterClient)
+        {
             PhotonNetwork.LeaveRoom();
+        }
+
     }
-    
 
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
@@ -195,12 +197,14 @@ public class GameManager : MonoBehaviourPunCallbacks
         if (PhotonNetwork.CurrentRoom.PlayerCount < 2)
         {
             SceneManager.LoadScene(mainMenuSceneName);
+            Destroy(gameObject);
         }
     }
 
     public override void OnLeftRoom()
     {
         SceneManager.LoadScene(mainMenuSceneName);
+        Destroy(gameObject);
     }
 
     public void Initialize()
