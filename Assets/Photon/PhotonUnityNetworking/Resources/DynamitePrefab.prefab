@@ -118,7 +118,6 @@ MonoBehaviour:
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 0
-  explosionAreaIndicator: {fileID: 0}
   explosionEffectPrefab: {fileID: 6237096970066847179, guid: 40fb320c4bb88494088a199fe9e71526, type: 3}
   explosionVisualDuration: 2
 --- !u!54 &9210204125016682918
