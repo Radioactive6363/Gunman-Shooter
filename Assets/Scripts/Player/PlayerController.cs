@@ -3,11 +3,37 @@ using Photon.Pun;
 
 public class PlayerController : MonoBehaviourPun
 {
-    public float speed = 5f;
-    public float mouseSensitivity = 100f;
-    public Transform cameraTransform;
+    [Header("Movement Settings")]
+    [SerializeField] private float speed = 5f;
+    [SerializeField] private float mouseSensitivity = 100f;
+    [SerializeField] private Transform cameraTransform;
+    
+    [Header("Local UI")]
+    [SerializeField] private GameObject localUiPrefab;
+    
+    [Header("Aiming Settings")]
+    [SerializeField] private float aimingSpeedMultiplier = 0.4f;
+    
+    [Header("Camera Settings")]
+    [SerializeField] private Camera playerCamera;
+    [SerializeField] private float baseFOV = 60f;
+    [SerializeField] private float aimFOV = 40f;
+    
+    
+    private float originalSpeed;
     
     private float xRotation = 0f;
+    
+    private void OnEnable()
+    {
+        // Renombramos el método para que tenga más sentido
+        PlayerShooting.OnWeaponChargeChanged += HandleChargeEffects;
+    }
+
+    private void OnDisable()
+    {
+        PlayerShooting.OnWeaponChargeChanged -= HandleChargeEffects;
+    }
 
     private void Start()
     {
@@ -18,6 +44,13 @@ public class PlayerController : MonoBehaviourPun
         }
         
         Cursor.lockState = CursorLockMode.Locked;
+        originalSpeed = speed;
+        
+        if (playerCamera == null) playerCamera = cameraTransform.GetComponent<Camera>();
+        
+        if (playerCamera != null) playerCamera.fieldOfView = baseFOV;
+
+        if (localUiPrefab != null) Instantiate(localUiPrefab);
     }
 
     private void Update()
@@ -26,6 +59,19 @@ public class PlayerController : MonoBehaviourPun
 
         HandleMovement();
         HandleLook();
+    }
+    
+    private void HandleChargeEffects(float chargePercentage)
+    {
+        if (!photonView.IsMine) return; 
+        
+        float targetSpeed = originalSpeed * aimingSpeedMultiplier;
+        speed = Mathf.Lerp(originalSpeed, targetSpeed, chargePercentage);
+
+        if (playerCamera != null)
+        {
+            playerCamera.fieldOfView = Mathf.Lerp(baseFOV, aimFOV, chargePercentage);
+        }
     }
 
     private void HandleMovement()

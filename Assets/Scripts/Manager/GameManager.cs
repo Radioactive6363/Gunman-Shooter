@@ -26,8 +26,12 @@ public class GameManager : MonoBehaviourPunCallbacks
     [SerializeField] private GameState currentState;
 
     private int _currentSceneIndex;
+    private List<int> _alivePlayers = new List<int>();
     private Dictionary<int, int> _playerWins = new Dictionary<int, int>();
+    
     private const int WINS_NEEDED = 2;
+    private const string READY_PROP_KEY = "IsReady";
+    
     private GameObject localPlayerInstance;
 
     private void Awake()
@@ -108,8 +112,79 @@ public class GameManager : MonoBehaviourPunCallbacks
         if (SceneManager.GetActiveScene().name == lobbyRoomSceneName)
         {
             SetGameState(GameState.WaitingForPlayers);
-            CheckPlayers();
+            ResetReadyState();
         }
+    }
+    
+    public void ToggleReady()
+    {
+        bool isCurrentlyReady = false;
+        
+        if (PhotonNetwork.LocalPlayer.CustomProperties.TryGetValue(READY_PROP_KEY, out object readyState))
+        {
+            isCurrentlyReady = (bool)readyState;
+        }
+        
+        ExitGames.Client.Photon.Hashtable props = new ExitGames.Client.Photon.Hashtable
+        {
+            { READY_PROP_KEY, !isCurrentlyReady }
+        };
+        PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+    }
+    
+    public override void OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)
+    {
+        if (currentState != GameState.WaitingForPlayers) return;
+
+        if (changedProps.ContainsKey(READY_PROP_KEY))
+        {
+            CheckAllPlayersReady();
+        }
+    }
+    
+    private void CheckAllPlayersReady()
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        int playerCount = PhotonNetwork.CurrentRoom.PlayerCount;
+        int readyCount = 0;
+        
+        foreach (Player p in PhotonNetwork.PlayerList)
+        {
+            if (p.CustomProperties.TryGetValue(READY_PROP_KEY, out object isReady) && (bool)isReady)
+            {
+                readyCount++;
+            }
+        }
+
+        Log.Info($"Players Ready: {readyCount}/{playerCount}");
+        
+        bool canStart = false;
+
+        if (playerCount == 1)
+        {
+            canStart = (readyCount == 1); 
+        }
+        else
+        {
+            canStart = (readyCount == playerCount);
+        }
+
+        if (canStart)
+        {
+            Log.Info("Everyone Ready");
+            SetGameState(GameState.Preparation); 
+            StartCoroutine(WaitAndLoadDuelScene(2f));
+        }
+    }
+    
+    private void ResetReadyState()
+    {
+        ExitGames.Client.Photon.Hashtable props = new ExitGames.Client.Photon.Hashtable
+        {
+            { READY_PROP_KEY, false }
+        };
+        PhotonNetwork.LocalPlayer.SetCustomProperties(props);
     }
     
     private IEnumerator SpawnWhenReady(string sceneName)
@@ -127,26 +202,6 @@ public class GameManager : MonoBehaviourPunCallbacks
     
         if (PhotonNetwork.IsMasterClient)
             StartCoroutine(DuelState());
-    }
-
-    public override void OnPlayerEnteredRoom(Player newPlayer)
-    {
-        if (currentState == GameState.WaitingForPlayers)
-            CheckPlayers();
-    }
-
-    private void CheckPlayers()
-    {
-        int needed = PhotonNetwork.CurrentRoom.MaxPlayers;
-        if (PhotonNetwork.IsMasterClient && PhotonNetwork.CurrentRoom.PlayerCount == needed)
-        {
-            Log.Info("All Players Connected. Starting match shortly...");
-            StartCoroutine(WaitAndLoadDuelScene(5f)); 
-        }
-        else
-        {
-            Log.Info($"({PhotonNetwork.CurrentRoom.PlayerCount}/{needed} Players)");
-        }
     }
     
     private IEnumerator WaitAndLoadDuelScene(float waitTime)
@@ -187,35 +242,55 @@ public class GameManager : MonoBehaviourPunCallbacks
     {
         SetGameState(GameState.Duel);
         Log.Info("Duel Started");
-    }
-    
-
-    public void RegisterKill(int deadPlayerActorNr)
-    {
-        if (currentState != GameState.Duel) return;
-
-        SetGameState(GameState.PostDuel);
-
+        
+        _alivePlayers.Clear();
         foreach (Player player in PhotonNetwork.PlayerList)
         {
-            if (player.ActorNumber != deadPlayerActorNr)
-            {
-                if (!_playerWins.ContainsKey(player.ActorNumber))
-                    _playerWins[player.ActorNumber] = 0;
-                _playerWins[player.ActorNumber]++;
-            }
+            _alivePlayers.Add(player.ActorNumber);
         }
+    }
 
+    public void RegisterPlayerDeath(int deadPlayerActorNr)
+    {
+        if (currentState != GameState.Duel) return;
+        
+        if (_alivePlayers.Contains(deadPlayerActorNr))
+        {
+            _alivePlayers.Remove(deadPlayerActorNr);
+            Log.Info($"Player {deadPlayerActorNr} eliminated. {_alivePlayers.Count} players alive.");
+        }
+        
+        if (_alivePlayers.Count > 1) return;
+        
+        SetGameState(GameState.PostDuel);
+
+        if (_alivePlayers.Count == 1)
+        {
+            int survivor = _alivePlayers[0];
+        
+            if (!_playerWins.ContainsKey(survivor))
+                _playerWins[survivor] = 0;
+            
+            _playerWins[survivor]++;
+            Log.Info($"Player {survivor} has won");
+        }
+        else
+        {
+            Log.Info("Tie, no Survivors.");
+        }
+        
         int[] actorNrs = new int[_playerWins.Count];
         int[] wins = new int[_playerWins.Count];
         int i = 0;
         foreach (var kvp in _playerWins) { actorNrs[i] = kvp.Key; wins[i] = kvp.Value; i++; }
 
         photonView.RPC("SyncScoreRPC", RpcTarget.All, actorNrs, wins);
-
+        
         int winner = -1;
         foreach (var kvp in _playerWins)
+        {
             if (kvp.Value >= WINS_NEEDED) { winner = kvp.Key; break; }
+        }
 
         if (winner != -1)
             photonView.RPC("EndMatchRPC", RpcTarget.MasterClient);

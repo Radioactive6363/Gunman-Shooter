@@ -8,17 +8,19 @@ public class Dynamite : MonoBehaviourPun, IWeapon
     [SerializeField] private float throwForce = 15f;
     [SerializeField] private float upwardArcForce = 5f;
 
-    public void Attack(Vector3 origin, Vector3 direction)
+    public void Attack(Vector3 origin, Vector3 direction, float chargePercentage)
     {
-        photonView.RPC("ThrowDynamiteRPC", RpcTarget.MasterClient, origin, direction);
+        photonView.RPC("ThrowDynamiteRPC", RpcTarget.MasterClient, origin, direction, chargePercentage);
     }
 
     [PunRPC]
-    private void ThrowDynamiteRPC(Vector3 origin, Vector3 direction, PhotonMessageInfo info)
+    private void ThrowDynamiteRPC(Vector3 origin, Vector3 direction, float chargePercentage, PhotonMessageInfo info)
     {
         Vector3 spawnPos = origin + (direction * 1.5f);
         
-        object[] instantiationData = new object[] { info.Sender.ActorNumber };
+        float fuseTime = Mathf.Lerp(4f, 1f, chargePercentage);
+        
+        object[] instantiationData = new object[] { info.Sender.ActorNumber, fuseTime };
         
         GameObject projectile = PhotonNetwork.Instantiate(prefabName, spawnPos, Quaternion.identity, 0, instantiationData);
         

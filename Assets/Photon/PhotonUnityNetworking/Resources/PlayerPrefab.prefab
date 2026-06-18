@@ -119,6 +119,11 @@ MonoBehaviour:
   speed: 5
   mouseSensitivity: 100
   cameraTransform: {fileID: 4354986429489223788}
+  localUiPrefab: {fileID: 2924574767587410986, guid: 59964f78a40217e478ae4cd063bc2495, type: 3}
+  aimingSpeedMultiplier: 0.4
+  playerCamera: {fileID: 4354986429489223786}
+  baseFOV: 60
+  aimFOV: 40
 --- !u!114 &4354986429267612272
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -200,6 +205,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraTransform: {fileID: 4354986429489223788}
+  maxChargeTime: 2
 --- !u!1 &4354986429489223789
 GameObject:
   m_ObjectHideFlags: 0

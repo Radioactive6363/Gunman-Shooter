@@ -19,15 +19,15 @@ public class PlayerHealth : MonoBehaviourPun, IDamageable
     private void Die()
     {
         isDead = true;
-        
+    
         GetComponent<PlayerController>().enabled = false;
         GetComponent<PlayerShooting>().enabled = false;
-        
+    
         Log.Info($"Player {photonView.Owner.NickName} has died.");
-        
+    
         if (PhotonNetwork.IsMasterClient)
         {
-            GameManager.Instance.RegisterKill(photonView.OwnerActorNr);
+            GameManager.Instance.RegisterPlayerDeath(photonView.OwnerActorNr);
         }
     }
 }

@@ -18,7 +18,6 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     public static PhotonManager Instance;
     public static string LastDisconnectErrorMessage = "";
     
-    public Action OnRoom;
     public Action OnConnectedToMasterEvent;
     public Action<short, string> OnJoinRoomFailedEvent;
     
@@ -163,8 +162,6 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         {
             PhotonNetwork.LoadLevel("LobbyRoomScene");
         }
-
-        OnRoom?.Invoke();
     }
 
    
@@ -179,7 +176,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         {
             RoomOptions roomOptions = new RoomOptions
             {
-                MaxPlayers = 2,
+                MaxPlayers = 4,
                 EmptyRoomTtl = 10000,
                 CleanupCacheOnLeave = false
             };

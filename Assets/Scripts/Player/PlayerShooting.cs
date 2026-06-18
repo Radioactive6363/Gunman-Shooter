@@ -1,11 +1,19 @@
+using System;
 using UnityEngine;
 using Photon.Pun;
 
 public class PlayerShooting : MonoBehaviourPun
 {
+    [Header("Shooting Properties")]
     [SerializeField] private Transform cameraTransform;
-    private IWeapon _currentWeapon;
+    [SerializeField] private float maxChargeTime = 2f; // Tiempo para el 100%
+    
+    private float _currentChargeTime = 0f;
+    private bool _isCharging = false;
     private bool canShoot = false; 
+    
+    private IWeapon _currentWeapon;
+    public static event Action<float> OnWeaponChargeChanged;
 
     private void Start()
     {
@@ -62,12 +70,31 @@ public class PlayerShooting : MonoBehaviourPun
     private void Update()
     {
         if (!photonView.IsMine) return;
+        if (!canShoot || _currentWeapon == null) return;
         
-        if (!canShoot) return;
-        
-        if (Input.GetMouseButtonDown(0) && _currentWeapon != null) 
+        if (Input.GetMouseButtonDown(0))
         {
-            _currentWeapon.Attack(cameraTransform.position, cameraTransform.forward);
+            _isCharging = true;
+            _currentChargeTime = 0f;
+        }
+        
+        if (Input.GetMouseButton(0) && _isCharging)
+        {
+            _currentChargeTime += Time.deltaTime;
+            _currentChargeTime = Mathf.Clamp(_currentChargeTime, 0f, maxChargeTime);
+            
+            float normalizedCharge = _currentChargeTime / maxChargeTime;
+            OnWeaponChargeChanged?.Invoke(normalizedCharge); 
+        }
+        
+        if (Input.GetMouseButtonUp(0) && _isCharging)
+        {
+            _isCharging = false;
+            float finalCharge = _currentChargeTime / maxChargeTime;
+            
+            _currentWeapon.Attack(cameraTransform.position, cameraTransform.forward, finalCharge);
+            
+            OnWeaponChargeChanged?.Invoke(0f); 
         }
     }
 }
