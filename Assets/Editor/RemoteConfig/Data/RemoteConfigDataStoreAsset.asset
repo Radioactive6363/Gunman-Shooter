@@ -12,12 +12,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 469c24fdb3bd6431b92cc1465bd9166b, type: 3}
   m_Name: RemoteConfigDataStoreAsset
   m_EditorClassIdentifier: 
-  _rsKeyList: "[\r\n  {\r\n    \"metadata\": {\r\n      \"entityId\": \"c68932d8-9db0-4e76-8c65-34161346ce57\"\r\n   
+  _rsKeyList: "[\r\n  {\r\n    \"metadata\": {\r\n      \"entityId\": \"769a6d22-cfe6-4829-92b2-b5f86b638906\"\r\n   
     },\r\n    \"rs\": {\r\n      \"key\": \"DesiredGameOrder\",\r\n      \"type\":
-    \"int\",\r\n      \"value\": 15\r\n    }\r\n  }\r\n]"
-  _rsLastCachedKeyList: "[\r\n  {\r\n    \"metadata\": {\r\n      \"entityId\": \"c68932d8-9db0-4e76-8c65-34161346ce57\"\r\n   
+    \"int\",\r\n      \"value\": 15\r\n    }\r\n  },\r\n  {\r\n    \"metadata\":
+    {\r\n      \"entityId\": \"f286cb90-a07e-4722-8710-67bb7d372b61\"\r\n    },\r\n   
+    \"rs\": {\r\n      \"key\": \"AvailableLevels\",\r\n      \"type\": \"string\",\r\n     
+    \"value\": \"CaveScene,DesertScene,JungleScene,NewLevelTestScene\"\r\n    }\r\n 
+    }\r\n]"
+  _rsLastCachedKeyList: "[\r\n  {\r\n    \"metadata\": {\r\n      \"entityId\": \"769a6d22-cfe6-4829-92b2-b5f86b638906\"\r\n   
     },\r\n    \"rs\": {\r\n      \"key\": \"DesiredGameOrder\",\r\n      \"type\":
-    \"int\",\r\n      \"value\": 15\r\n    }\r\n  }\r\n]"
+    \"int\",\r\n      \"value\": 15\r\n    }\r\n  },\r\n  {\r\n    \"metadata\":
+    {\r\n      \"entityId\": \"f286cb90-a07e-4722-8710-67bb7d372b61\"\r\n    },\r\n   
+    \"rs\": {\r\n      \"key\": \"AvailableLevels\",\r\n      \"type\": \"string\",\r\n     
+    \"value\": \"CaveScene,DesertScene,JungleScene,NewLevelTestScene\"\r\n    }\r\n 
+    }\r\n]"
   _environments: "[\r\n  {\r\n    \"projectId\": \"29aa2024-aff7-489c-9626-8d5dbc2b8b59\",\r\n   
     \"name\": \"production\",\r\n    \"id\": \"d71b5ca1-e2aa-477f-a0c7-63fe73f4cd8d\",\r\n   
     \"isDefault\": true,\r\n    \"createdAt\": \"2026-06-18T17:30:47Z\",\r\n    \"updatedAt\":

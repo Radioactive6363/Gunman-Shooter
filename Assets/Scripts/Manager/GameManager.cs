@@ -108,7 +108,13 @@ public class GameManager : MonoBehaviourPunCallbacks
             }
             
             await RemoteConfigService.Instance.FetchConfigsAsync(new userAttributes(), new appAttributes());
-        
+
+            string availableLevels = RemoteConfigService.Instance.appConfig.GetString("AvailableLevels");
+
+            string[] levels = availableLevels.Split(',');
+
+            SetLevels(levels);
+
             int seed = RemoteConfigService.Instance.appConfig.GetInt("DesiredGameOrder");
         
             if (seed != 0)
@@ -140,7 +146,15 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
 
     }
-    
+
+    private void SetLevels(string[] levels)
+    {
+        if (levels.Length > 2)
+        {
+            duelScenes = levels;
+        }
+    }
+
     public void SetDuelStartDelay(float seconds)
     {
         timeTillDuel = Mathf.CeilToInt(seconds);
