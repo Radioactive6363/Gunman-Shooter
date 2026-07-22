@@ -200,6 +200,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         {
             SetGameState(GameState.WaitingForPlayers);
             ResetReadyState();
+            SpawnLobbyPlayer();
         }
     }
     
@@ -324,6 +325,51 @@ public class GameManager : MonoBehaviourPunCallbacks
         _localPlayerInstance = PhotonNetwork.Instantiate("PlayerPrefab", spawnPosition, Quaternion.identity);
     }
 
+    private void SpawnLobbyPlayer()
+    {
+        Vector3 spawnPosition = new Vector3(0, -10f, 0);
+        _localPlayerInstance = PhotonNetwork.Instantiate("LobbyPlayerPrefab", spawnPosition, Quaternion.identity);
+        StartCoroutine(ArrangeCircleRoutine());
+    }
+
+    public void ArrangeInCircle()
+    {
+        float radius = 1f;
+
+        UIPlayerName[] items = UnityEngine.Object.FindObjectsOfType<UIPlayerName>();
+        int count = items.Length;
+
+        if (count == 0)
+        {
+            Debug.LogWarning("No objects of type TargetComponent found.");
+            return;
+        }
+
+        float angleStep = 360f / count;
+
+        for (int i = 0; i < count; i++)
+        {
+            float angle = i * angleStep;
+            float radians = angle * Mathf.Deg2Rad;
+
+            float x = Mathf.Cos(radians) * radius;
+            float z = Mathf.Sin(radians) * radius;
+
+            Vector3 newPosition = new Vector3(x, 0f, z) + transform.position;
+
+            if (items[i].transform.position.y < 0f)
+            {
+                items[i].transform.position = new Vector3(newPosition.x, items[i].transform.position.y + 11f, newPosition.z);
+            }
+            else
+            {
+                items[i].transform.position = new Vector3(newPosition.x, items[i].transform.position.y, newPosition.z);
+            }
+
+            //items[i].transform.LookAt(transform.position);
+        }
+    }
+
     private void LoadNextDuelScene()
     {
         if (!PhotonNetwork.IsMasterClient) return;
@@ -341,8 +387,11 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     public override void OnMasterClientSwitched(Player newMasterClient)
     {
-        base.OnMasterClientSwitched(newMasterClient);
-        RestartDuelScene();
+        if (SceneManager.GetActiveScene().name != lobbyRoomSceneName)
+        {
+            base.OnMasterClientSwitched(newMasterClient);
+            RestartDuelScene();
+        }
     }
 
     private IEnumerator DuelState()
@@ -423,6 +472,12 @@ public class GameManager : MonoBehaviourPunCallbacks
         OnRoundWinnerDeclared?.Invoke(winnerName);
     }
 
+    private IEnumerator ArrangeCircleRoutine()
+    {
+        yield return new WaitForSeconds(1f);
+        ArrangeInCircle();
+    }
+
     private IEnumerator ResetRoundRoutine()
     {
         yield return new WaitForSeconds(3f);
@@ -459,11 +514,41 @@ public class GameManager : MonoBehaviourPunCallbacks
             PhotonNetwork.LoadLevel(lobbyRoomSceneName);
         }
     }
-    
+
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        base.OnPlayerEnteredRoom(newPlayer);
+        if (SceneManager.GetActiveScene().name == lobbyRoomSceneName)
+        {
+            StartCoroutine(ArrangeCircleRoutine());
+        }
+    }
+
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
+        base.OnPlayerLeftRoom(otherPlayer);
+
         Log.Info($"Player {otherPlayer.NickName} disconnected.");
-        
+
+        if (SceneManager.GetActiveScene().name == lobbyRoomSceneName)
+        {
+            if (PhotonNetwork.IsMasterClient)
+            {
+                PhotonView[] allViews = GameObject.FindObjectsOfType<PhotonView>();
+
+                int disconnectedActorNr = otherPlayer.ActorNumber;
+
+                foreach (PhotonView view in allViews)
+                {
+                    if (view != null && view.CreatorActorNr == disconnectedActorNr)
+                    {
+                        PhotonNetwork.Destroy(view.gameObject);
+                    }
+                }
+                StartCoroutine(ArrangeCircleRoutine());
+            }
+        }
+
         if (PhotonNetwork.IsMasterClient)
         {
             photonView.RPC("BroadcastServerMessageRPC", RpcTarget.All, $"{otherPlayer.NickName} has fled the duel");
