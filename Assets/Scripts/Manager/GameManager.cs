@@ -413,7 +413,12 @@ public class GameManager : MonoBehaviourPunCallbacks
             : "Unknown";
 
         OnMatchWinnerDeclared?.Invoke(winnerName);
-        
+
+        if (matchWinnerActorNr != -1 && PhotonNetwork.LocalPlayer.ActorNumber == matchWinnerActorNr && DreamloManager.Instance != null)
+        {
+            DreamloManager.Instance.AddWin(winnerName);
+        }
+
         if (PhotonNetwork.IsMasterClient)
             StartCoroutine(ReturnToLobbyRoutine());
     }
