@@ -332,6 +332,19 @@ public class GameManager : MonoBehaviourPunCallbacks
         _currentSceneIndex = (_currentSceneIndex + 1) % duelScenes.Length;
     }
 
+    private void RestartDuelScene()
+    {
+        if (!PhotonNetwork.IsMasterClient) return;
+        Log.Info("Duel restarted due to new MasterClient");
+        PhotonNetwork.LoadLevel(duelScenes[_currentSceneIndex]);
+    }
+
+    public override void OnMasterClientSwitched(Player newMasterClient)
+    {
+        base.OnMasterClientSwitched(newMasterClient);
+        RestartDuelScene();
+    }
+
     private IEnumerator DuelState()
     {
         yield return new WaitForSeconds(timeTillDuel);
