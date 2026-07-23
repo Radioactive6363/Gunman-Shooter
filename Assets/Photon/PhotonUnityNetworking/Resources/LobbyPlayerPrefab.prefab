@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8911604746046003969}
   - component: {fileID: 5539243238573294263}
   - component: {fileID: 151947276862571619}
+  - component: {fileID: 2419586188219134742}
   m_Layer: 0
   m_Name: CharacterBase
   m_TagString: Untagged
@@ -27,7 +28,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1851499846999765256}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -78,6 +79,9 @@ MonoBehaviour:
   - Type: 4
     SynchronizeType: 0
     Name: Die
+  - Type: 3
+    SynchronizeType: 0
+    Name: WeaponIndex
   m_SynchronizeLayers:
   - SynchronizeType: 0
     LayerIndex: 0
@@ -96,6 +100,18 @@ MonoBehaviour:
   avatarDatabase: {fileID: 11400000, guid: 97b8b3573dcbdc14f9c87ec3450a9990, type: 2}
   characterBaseParent: {fileID: 6568443987537995321}
   rootAnimator: {fileID: 8911604746046003969}
+--- !u!114 &2419586188219134742
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1851499846999765256}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03d4deec8682e1a4a89bfaa50c70f010, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3707291757668302224
 GameObject:
   m_ObjectHideFlags: 0
@@ -262,7 +278,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4354986429267612274}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.39, y: 1, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
