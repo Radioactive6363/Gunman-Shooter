@@ -11,8 +11,6 @@ public class UIPlayerName : MonoBehaviourPun
     [Header("Colors & Visuals")]
     [SerializeField] private Color aliveColor = Color.green;
     [SerializeField] private Color deadColor = Color.red;
-    [SerializeField] private Renderer playerMeshRenderer; 
-
     private PlayerHealth _health;
 
     private void Awake()
@@ -42,10 +40,5 @@ public class UIPlayerName : MonoBehaviourPun
     {
         playerName.color = deadColor;
         playerName.text += " (FALLEN)";
-        
-        if (playerMeshRenderer != null)
-        {
-            playerMeshRenderer.material.color = deadColor;
-        }
     }
 }

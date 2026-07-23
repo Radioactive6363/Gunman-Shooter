@@ -498,6 +498,10 @@ public class GameManager : MonoBehaviourPunCallbacks
 
         if (matchWinnerActorNr != -1 && PhotonNetwork.LocalPlayer.ActorNumber == matchWinnerActorNr && DreamloManager.Instance != null)
         {
+            PhotonManager.Instance.LocalProfile.wins++;
+            
+            PhotonManager.Instance.SaveCurrentProfile();
+            
             DreamloManager.Instance.AddWin(winnerName);
         }
 

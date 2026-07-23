@@ -15,6 +15,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     [SerializeField] private float outcomeLag;
     [SerializeField] private float incomeJitter;
     [SerializeField] private float outcomeJitter;
+    public PlayerProfilePackage LocalProfile { get; private set; }
     
     private string _savePath => Path.Combine(Application.persistentDataPath, "player_profile.json");
     
@@ -105,11 +106,11 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     
     private void LoadPlayerData()
     {
-        PlayerProfilePackage loadedData = JsonDataHandler.LoadJSON(_savePath);
+        LocalProfile = JsonDataHandler.LoadJSON(_savePath);
 
-        if (loadedData != null)
+        if (LocalProfile != null)
         {
-            PhotonNetwork.NickName = loadedData.nickname;
+            PhotonNetwork.NickName = LocalProfile.nickname;
             Log.Info($"Loaded profile for: {PhotonNetwork.NickName}");
         }
         else
@@ -117,18 +118,19 @@ public class PhotonManager : MonoBehaviourPunCallbacks
             string defaultName = PlayerPrefs.GetString("PlayerName", "Default");
             PhotonNetwork.NickName = defaultName;
             
-            SavePlayerData(defaultName, 0, false);
+            LocalProfile = new PlayerProfilePackage(defaultName, 0, false, 0);
+            
+            SaveCurrentProfile();
         }
     }
     
-    public void SavePlayerData(string nickname, int avatarId, bool isReady)
+    public void SaveCurrentProfile()
     {
-        PlayerProfilePackage newData = new PlayerProfilePackage(nickname, avatarId, isReady);
-        JsonDataHandler.SaveJSON(_savePath, newData);
+        JsonDataHandler.SaveJSON(_savePath, LocalProfile);
         
-        PhotonNetwork.NickName = nickname;
+        PhotonNetwork.NickName = LocalProfile.nickname;
         
-        PlayerPrefs.SetString("PlayerName", nickname);
+        PlayerPrefs.SetString("PlayerName", LocalProfile.nickname);
         PlayerPrefs.Save();
     }
 

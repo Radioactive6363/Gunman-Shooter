@@ -1,8 +1,11 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using Photon.Pun;
 using Photon.Realtime;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MenuManager : MonoBehaviour
 {
@@ -23,6 +26,18 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI nameTool;
     [SerializeField] private TMP_InputField nameInputField;
     
+    [Header("Stats UI")]
+    [SerializeField] private TextMeshProUGUI winsDisplay;
+    
+    [Header("Avatar UI")]
+    [SerializeField] private AvatarDatabase avatarDatabase;
+    [SerializeField] private Image avatarPreviewImage;
+    [SerializeField] private TextMeshProUGUI avatarNameDisplay;
+    [SerializeField] private TextMeshProUGUI avatarConfirmationText;
+    private Coroutine _confirmationCoroutine;
+    
+    private int _currentAvatarIndex = 0;
+    
     private enum ErrorContext { None, Disconnected, RoomJoinFailed, RoomCreateFailed }
     private ErrorContext _currentErrorContext = ErrorContext.None;
 
@@ -35,7 +50,22 @@ public class MenuManager : MonoBehaviour
         PhotonManager.Instance.OnJoinRoomFailedEvent += OnJoinRoomError;
         PhotonManager.Instance.OnDisconnectedEvent += OnDisconnectedError;
         
-        playerName = PhotonNetwork.NickName;
+        if (PhotonManager.Instance != null && PhotonManager.Instance.LocalProfile != null)
+        {
+            playerName = PhotonManager.Instance.LocalProfile.nickname;
+            _currentAvatarIndex = PhotonManager.Instance.LocalProfile.avatarId;
+            
+            if (winsDisplay != null)
+                winsDisplay.text = $"Wins: {PhotonManager.Instance.LocalProfile.wins}";
+            
+            ExitGames.Client.Photon.Hashtable props = new ExitGames.Client.Photon.Hashtable();
+            props["AvatarID"] = _currentAvatarIndex;
+            PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+        }
+        else
+        {
+            playerName = PhotonNetwork.NickName;
+        }
         
         UpdateName();
 
@@ -58,6 +88,10 @@ public class MenuManager : MonoBehaviour
             Log.Info("[UI] Loading Regularly.");
             loadingScreen.SetActive(true);
         }
+        
+        if (avatarConfirmationText != null) 
+            avatarConfirmationText.text = "";
+        UpdateAvatarUI();
     }
 
     private void OnDestroy()
@@ -162,7 +196,8 @@ public class MenuManager : MonoBehaviour
 
         playerName = inputText;
         
-        PhotonManager.Instance.SavePlayerData(playerName, 0, false);
+        PhotonManager.Instance.LocalProfile.nickname = playerName;
+        PhotonManager.Instance.SaveCurrentProfile();
         
         UpdateName();
     }
@@ -170,5 +205,74 @@ public class MenuManager : MonoBehaviour
     private void UpdateName()
     {
         nameTool.text = playerName;
+        
+        if (nameInputField != null && string.IsNullOrEmpty(nameInputField.text))
+        {
+            nameInputField.text = playerName; 
+        }
+    }
+    
+    public void NextAvatar()
+    {
+        if (avatarDatabase == null || avatarDatabase.availableAvatars.Length == 0) return;
+        
+        _currentAvatarIndex++;
+        if (_currentAvatarIndex >= avatarDatabase.availableAvatars.Length)
+        {
+            _currentAvatarIndex = 0;
+        }
+        UpdateAvatarUI();
+    }
+    
+    public void PreviousAvatar()
+    {
+        if (avatarDatabase == null || avatarDatabase.availableAvatars.Length == 0) return;
+        
+        _currentAvatarIndex--;
+        if (_currentAvatarIndex < 0)
+        {
+            _currentAvatarIndex = avatarDatabase.availableAvatars.Length - 1;
+        }
+        UpdateAvatarUI();
+    }
+    
+    private void UpdateAvatarUI()
+    {
+        AvatarData currentData = avatarDatabase.availableAvatars[_currentAvatarIndex];
+        
+        if (avatarPreviewImage != null)
+            avatarPreviewImage.sprite = currentData.avatarIcon;
+            
+        if (avatarNameDisplay != null)
+            avatarNameDisplay.text = currentData.avatarName;
+    }
+
+    public void ConfirmAvatarSelection()
+    {
+        PhotonManager.Instance.LocalProfile.avatarId = _currentAvatarIndex;
+        PhotonManager.Instance.SaveCurrentProfile();
+        
+        ExitGames.Client.Photon.Hashtable props = new ExitGames.Client.Photon.Hashtable();
+        props["AvatarID"] = _currentAvatarIndex;
+        PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+        
+        if (avatarConfirmationText != null)
+        {
+            if (_confirmationCoroutine != null) 
+                StopCoroutine(_confirmationCoroutine);
+                
+            _confirmationCoroutine = StartCoroutine(ShowConfirmationRoutine());
+        }
+    }
+    
+    private IEnumerator ShowConfirmationRoutine()
+    {
+        avatarConfirmationText.text = "Avatar Confirmed!";
+        avatarConfirmationText.color = Color.green; 
+        
+        yield return new WaitForSeconds(2.5f);
+        
+        if (avatarConfirmationText != null)
+            avatarConfirmationText.text = "";
     }
 }
