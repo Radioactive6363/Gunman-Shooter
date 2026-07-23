@@ -6,13 +6,15 @@ public class PlayerShooting : MonoBehaviourPun
 {
     [Header("Shooting Properties")]
     [SerializeField] private Transform cameraTransform;
-    [SerializeField] private float maxChargeTime = 2f; // Tiempo para el 100%
+    [SerializeField] private float maxChargeTime = 2f;
+    
     
     private float _currentChargeTime = 0f;
     private bool _isCharging = false;
     private bool canShoot = false; 
     
     private IWeapon _currentWeapon;
+    public static event Action OnWeaponFired; 
     public static event Action<float> OnWeaponChargeChanged;
 
     private void Start()
@@ -95,6 +97,8 @@ public class PlayerShooting : MonoBehaviourPun
             _currentWeapon.Attack(cameraTransform.position, cameraTransform.forward, finalCharge);
             
             OnWeaponChargeChanged?.Invoke(0f); 
+            
+            OnWeaponFired?.Invoke(); 
         }
     }
 }

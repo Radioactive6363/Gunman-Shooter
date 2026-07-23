@@ -19,11 +19,13 @@ public class PlayerAnimationController : MonoBehaviourPun
     private void OnEnable()
     {
         PlayerHealth.OnLocalDeath += HandleDeath;
+        PlayerShooting.OnWeaponFired += HandleWeaponFired; 
     }
 
     private void OnDisable()
     {
         PlayerHealth.OnLocalDeath -= HandleDeath;
+        PlayerShooting.OnWeaponFired -= HandleWeaponFired; 
     }
 
     private void Start()
@@ -39,7 +41,6 @@ public class PlayerAnimationController : MonoBehaviourPun
         if (!photonView.IsMine || !DuelRestrictor.CanMove()) return;
 
         UpdateMovementAnimation();
-        HandleShootingInput();
     }
 
     private void SetWeaponAnimationProfile()
@@ -47,9 +48,7 @@ public class PlayerAnimationController : MonoBehaviourPun
         if (LevelWeaponConfig.Instance != null)
         {
             int currentWeaponInt = (int)LevelWeaponConfig.Instance.allowedWeapon;
-            
             _animator.SetInteger(WeaponIndexHash, currentWeaponInt);
-            
             Log.Info($"[Animation] WeaponIndex set to {currentWeaponInt}");
         }
     }
@@ -65,16 +64,13 @@ public class PlayerAnimationController : MonoBehaviourPun
         }
         
         Vector2 inputDir = new Vector2(x, y).normalized;
-        
         _animator.SetFloat(SpeedHash, inputDir.magnitude);
     }
 
-    private void HandleShootingInput()
+    private void HandleWeaponFired()
     {
-        if (Input.GetMouseButtonUp(0))
-        {
-            _animator.SetTrigger(ShootHash);
-        }
+        if (!photonView.IsMine) return;
+        _animator.SetTrigger(ShootHash);
     }
 
     private void HandleDeath()
