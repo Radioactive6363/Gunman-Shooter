@@ -15,3 +15,5 @@ MonoBehaviour:
   availableAvatars:
   - {fileID: 11400000, guid: 01912b978150f0a4cae0794e4171cb8d, type: 2}
   - {fileID: 11400000, guid: 480e2f3ad5adc4f43b1fb060afab8d63, type: 2}
+  - {fileID: 11400000, guid: e775806e4166f69499c10d3d25a3ba93, type: 2}
+  - {fileID: 11400000, guid: 428b822fa1bc4aa4cad152db546d20f2, type: 2}

@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 982e76a89eb3078418bc476e82c3e92c, type: 3}
-  m_Name: ArcherModel
+  m_Name: CastleSoldier
   m_EditorClassIdentifier: 
-  avatarName: Archer
-  avatarIcon: {fileID: 21300000, guid: 2a77ffad568ac8d4589217a5894f0b6f, type: 3}
-  modelPrefab: {fileID: 919132149155446097, guid: fc743146e6fdcce4ca11d0d9891f7720, type: 3}
-  characterAvatar: {fileID: 9000000, guid: fc743146e6fdcce4ca11d0d9891f7720, type: 3}
+  avatarName: Castle Soldier
+  avatarIcon: {fileID: 21300000, guid: 30aab1ea8d4626b45ad6c239ae59088c, type: 3}
+  modelPrefab: {fileID: 919132149155446097, guid: e6e14d7223a1fc642b46f5fae6d2809c, type: 3}
+  characterAvatar: {fileID: 9000000, guid: e6e14d7223a1fc642b46f5fae6d2809c, type: 3}
