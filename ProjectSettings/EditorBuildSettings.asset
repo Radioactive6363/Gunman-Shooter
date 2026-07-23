@@ -20,7 +20,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/CaveScene.unity
     guid: 7d79446c10cdfda4ead906872d5ab7e1
-  - enabled: 1
-    path: Assets/Scenes/NewLevelTestScene.unity
-    guid: 2b460842479ee8743ba7f46596ec2149
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
   m_configObjects: {}
