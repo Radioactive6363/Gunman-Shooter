@@ -19,6 +19,9 @@ public class PlayerController : MonoBehaviourPun
     [SerializeField] private float baseFOV = 60f;
     [SerializeField] private float aimFOV = 40f;
     
+    [Header("Animation")]
+    [SerializeField] private Animator animator;
+    
     private float originalSpeed;
     
     private float xRotation = 0f;
@@ -57,6 +60,11 @@ public class PlayerController : MonoBehaviourPun
 
         HandleMovement();
         HandleLook();
+
+        if (animator != null)
+        {
+            UpdateAnimations();
+        }
     }
     
     private void HandleChargeEffects(float chargePercentage)
@@ -98,5 +106,11 @@ public class PlayerController : MonoBehaviourPun
 
         cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
         transform.Rotate(Vector3.up * mouseX);
+    }
+    
+    private void UpdateAnimations()
+    {
+        float moveMagnitude = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")).magnitude;
+        animator.SetFloat("Speed", moveMagnitude);
     }
 }

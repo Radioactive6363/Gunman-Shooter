@@ -265,6 +265,7 @@ MonoBehaviour:
   playerCamera: {fileID: 4354986429489223786}
   baseFOV: 60
   aimFOV: 40
+  animator: {fileID: 0}
 --- !u!114 &8631872013234003579
 MonoBehaviour:
   m_ObjectHideFlags: 0
