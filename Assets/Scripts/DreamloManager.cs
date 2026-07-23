@@ -4,10 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-/// <summary>
-/// Maneja la comunicacion con Dreamlo: sumar victorias por nickname
-/// y obtener el top N del leaderboard para mostrarlo en el menu.
-/// </summary>
 public class DreamloManager : MonoBehaviour
 {
     public static DreamloManager Instance;
@@ -19,7 +15,6 @@ public class DreamloManager : MonoBehaviour
     [Tooltip("Codigo publico (lectura).")]
     [SerializeField] private string publicCode = "PUBLIC_CODE";
 
-    /// <summary>Se dispara cuando el leaderboard termina de cargarse.</summary>
     public event Action<List<DreamloEntry>> OnLeaderboardLoaded;
 
     private void Awake()
@@ -35,14 +30,7 @@ public class DreamloManager : MonoBehaviour
         }
     }
 
-    // ---------------------------------------------------------------
     // SUMAR VICTORIA
-    // ---------------------------------------------------------------
-
-    /// <summary>
-    /// Suma 1 victoria al nickname indicado. Busca el puntaje actual
-    /// en el leaderboard y sube el total en 1 antes de enviarlo.
-    /// </summary>
     public void AddWin(string nickname)
     {
         if (string.IsNullOrEmpty(nickname))
@@ -58,7 +46,7 @@ public class DreamloManager : MonoBehaviour
     {
         int currentWins = 0;
 
-        // 1) Traer el leaderboard completo (formato pipe) y buscar el jugador
+        // Traer el leaderboard completo (formato pipe) y buscar el jugador
         string listUrl = $"http://dreamlo.com/lb/{publicCode}/pipe";
 
         using (UnityWebRequest www = UnityWebRequest.Get(listUrl))
@@ -80,7 +68,7 @@ public class DreamloManager : MonoBehaviour
             }
         }
 
-        // 2) Enviar el nuevo total (actual + 1)
+        // Enviar el nuevo total (actual + 1)
         int newWins = currentWins + 1;
         string addUrl = $"http://dreamlo.com/lb/{privateCode}/add/{UnityWebRequest.EscapeURL(nickname)}/{newWins}";
 
@@ -95,11 +83,8 @@ public class DreamloManager : MonoBehaviour
         }
     }
 
-    // ---------------------------------------------------------------
     // OBTENER LEADERBOARD
-    // ---------------------------------------------------------------
 
-    /// <summary>Pide el top N de jugadores por victorias.</summary>
     public void GetLeaderboard(int topCount = 10)
     {
         StartCoroutine(GetLeaderboardRoutine(topCount));
@@ -133,13 +118,7 @@ public class DreamloManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Parsea el formato "pipe" de Dreamlo: una linea de texto por jugador,
-    /// campos separados por "|" -> name|score|seconds|text|date
-    /// Evitamos JsonUtility porque cuando el leaderboard tiene 0 o 1
-    /// jugadores, el JSON de Dreamlo cambia de forma (entry deja de ser
-    /// array) y tira ArgumentException al parsear.
-    /// </summary>
+    //PARSEAR ENTRIES
     private List<DreamloEntry> ParseLeaderboard(string raw)
     {
         List<DreamloEntry> result = new List<DreamloEntry>();

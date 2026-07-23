@@ -2,10 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
-/// Muestra el top N del leaderboard de Dreamlo en una tabla del menu.
-/// Asigna en el inspector 10 filas (objetos con Rank/Name/Score Text).
-/// </summary>
 public class LeaderboardUI : MonoBehaviour
 {
     [Header("Filas del leaderboard (asignar en el inspector)")]
@@ -19,7 +15,6 @@ public class LeaderboardUI : MonoBehaviour
         RefreshLeaderboard();
     }
 
-    /// <summary>Llamar tambien desde un boton "Refrescar" si queres.</summary>
     public void RefreshLeaderboard()
     {
         Debug.Log("[LeaderboardUI] RefreshLeaderboard llamado.");
