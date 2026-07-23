@@ -118,7 +118,8 @@ public class PhotonManager : MonoBehaviourPunCallbacks
             string defaultName = PlayerPrefs.GetString("PlayerName", "Default");
             PhotonNetwork.NickName = defaultName;
             
-            LocalProfile = new PlayerProfilePackage(defaultName, 0, false, 0);
+            // AÑADIDO el 0 al final para el colorId
+            LocalProfile = new PlayerProfilePackage(defaultName, 0, false, 0, "#FFFFFF"); 
             
             SaveCurrentProfile();
         }

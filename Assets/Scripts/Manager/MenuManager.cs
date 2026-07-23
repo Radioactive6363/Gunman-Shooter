@@ -36,6 +36,10 @@ public class MenuManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI avatarConfirmationText;
     private Coroutine _confirmationCoroutine;
     
+    [Header("Color UI")]
+    [SerializeField] private FlexibleColorPicker fcp; 
+    private string _currentColorHex = "#FFFFFF";
+    
     private int _currentAvatarIndex = 0;
     
     private enum ErrorContext { None, Disconnected, RoomJoinFailed, RoomCreateFailed }
@@ -53,7 +57,13 @@ public class MenuManager : MonoBehaviour
         if (PhotonManager.Instance != null && PhotonManager.Instance.LocalProfile != null)
         {
             playerName = PhotonManager.Instance.LocalProfile.nickname;
+            _currentColorHex = PhotonManager.Instance.LocalProfile.colorHex;
             _currentAvatarIndex = PhotonManager.Instance.LocalProfile.avatarId;
+            
+            if (ColorUtility.TryParseHtmlString(_currentColorHex, out Color parsedColor))
+            {
+                if (fcp != null) fcp.color = parsedColor; 
+            }
             
             if (winsDisplay != null)
                 winsDisplay.text = $"Wins: {PhotonManager.Instance.LocalProfile.wins}";
@@ -250,17 +260,17 @@ public class MenuManager : MonoBehaviour
     public void ConfirmAvatarSelection()
     {
         PhotonManager.Instance.LocalProfile.avatarId = _currentAvatarIndex;
+        PhotonManager.Instance.LocalProfile.colorHex = _currentColorHex;
         PhotonManager.Instance.SaveCurrentProfile();
         
         ExitGames.Client.Photon.Hashtable props = new ExitGames.Client.Photon.Hashtable();
         props["AvatarID"] = _currentAvatarIndex;
+        props["ColorHex"] = _currentColorHex;   
         PhotonNetwork.LocalPlayer.SetCustomProperties(props);
         
         if (avatarConfirmationText != null)
         {
-            if (_confirmationCoroutine != null) 
-                StopCoroutine(_confirmationCoroutine);
-                
+            if (_confirmationCoroutine != null) StopCoroutine(_confirmationCoroutine);
             _confirmationCoroutine = StartCoroutine(ShowConfirmationRoutine());
         }
     }
@@ -274,5 +284,10 @@ public class MenuManager : MonoBehaviour
         
         if (avatarConfirmationText != null)
             avatarConfirmationText.text = "";
+    }
+    
+    public void OnColorWheelChanged(Color newColor)
+    {
+        _currentColorHex = "#" + ColorUtility.ToHtmlStringRGB(newColor);
     }
 }
