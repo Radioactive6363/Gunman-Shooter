@@ -200,6 +200,9 @@ public class GameManager : MonoBehaviourPunCallbacks
         {
             SetGameState(GameState.WaitingForPlayers);
             ResetReadyState();
+            
+            _playerWins.Clear(); 
+            
             SpawnLobbyPlayer();
         }
     }
@@ -321,8 +324,16 @@ public class GameManager : MonoBehaviourPunCallbacks
     
     private void SpawnPlayer()
     {
-        Vector3 spawnPosition = new Vector3(0, 1f, 0);
+        Vector3 spawnPosition = PhotonNetwork.IsMasterClient 
+            ? new Vector3(-5f, 1f, 0f) 
+            : new Vector3(5f, 1f, 0f);
+            
         _localPlayerInstance = PhotonNetwork.Instantiate("PlayerPrefab", spawnPosition, Quaternion.identity);
+        
+        if (PhotonNetwork.IsMasterClient)
+            _localPlayerInstance.transform.rotation = Quaternion.Euler(0, 90, 0);
+        else
+            _localPlayerInstance.transform.rotation = Quaternion.Euler(0, -90, 0);
     }
 
     private void SpawnLobbyPlayer()
@@ -496,13 +507,15 @@ public class GameManager : MonoBehaviourPunCallbacks
 
         OnMatchWinnerDeclared?.Invoke(winnerName);
 
-        if (matchWinnerActorNr != -1 && PhotonNetwork.LocalPlayer.ActorNumber == matchWinnerActorNr && DreamloManager.Instance != null)
+        if (matchWinnerActorNr != -1 && PhotonNetwork.LocalPlayer.ActorNumber == matchWinnerActorNr)
         {
             PhotonManager.Instance.LocalProfile.wins++;
-            
             PhotonManager.Instance.SaveCurrentProfile();
             
-            DreamloManager.Instance.AddWin(winnerName);
+            if (DreamloManager.Instance != null)
+            {
+                DreamloManager.Instance.AddWin(winnerName);
+            }
         }
 
         if (PhotonNetwork.IsMasterClient)
