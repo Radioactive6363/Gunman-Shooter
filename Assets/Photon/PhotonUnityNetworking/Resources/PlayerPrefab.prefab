@@ -288,6 +288,7 @@ MonoBehaviour:
   observableSearch: 2
   ObservedComponents:
   - {fileID: 4354986429267612282}
+  - {fileID: 8537233400480968143}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -635,10 +636,10 @@ MonoBehaviour:
     SynchronizeType: 2
     Name: Speed
   - Type: 9
-    SynchronizeType: 2
+    SynchronizeType: 1
     Name: Shoot
   - Type: 4
-    SynchronizeType: 2
+    SynchronizeType: 1
     Name: Die
   - Type: 3
     SynchronizeType: 2
